@@ -8,24 +8,22 @@ import java.util.Scanner;
 public class IdcDm {
     /***
      * Get the needed url addresses of the servers from the CMD or from a file
-     * @param urlArgument url address or file contains url addresses
+     * @param urlOrFile url address or file contains url addresses
      * @return List<URL> contains all servers which will be managed by the DM
      */
-    public static List<URL> parseUrlArgument(String urlArgument) {
+    public static List<URL> parseFirstArgument(String urlOrFile) {
         List<URL> urlsList = new ArrayList<>();
         String usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
-        boolean isUrlList = !urlArgument.startsWith("http://") && !urlArgument.startsWith("https://");
+        boolean isUrlList = !urlOrFile.startsWith("http://") && !urlOrFile.startsWith("https://");
 
         try {
             if (isUrlList) {
-                Scanner scanner = new Scanner(new File(urlArgument));
-                scanner.useDelimiter(System.lineSeparator());
-                while (scanner.hasNext()) {
-                    String url = scanner.next();
-                    urlsList.add(new URL(url));
+                Scanner s = new Scanner(new File(urlOrFile));
+                while (s.hasNext()) {
+                    urlsList.add(new URL(s.next()));
                 }
             } else {
-                urlsList.add(new URL(urlArgument));
+                urlsList.add(new URL(urlOrFile));
             }
         } catch (MalformedURLException e) {
             System.err.println("Error, invalid url\n" + usage);
@@ -50,9 +48,9 @@ public class IdcDm {
                 return;
             } else if (args.length == 1) {
                 numberOfThreads = 1;
-                urlsList = parseUrlArgument(args[0]);
+                urlsList = parseFirstArgument(args[0]);
             } else if (args.length == 2) {
-                urlsList = parseUrlArgument(args[0]);
+                urlsList = parseFirstArgument(args[0]);
                 numberOfThreads = Integer.parseInt(args[1]);
             } else {
                 System.err.println("Error, too much arguments \n" + usage);

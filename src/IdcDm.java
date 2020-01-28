@@ -7,14 +7,13 @@ import java.util.Scanner;
 
 public class IdcDm {
     /***
-     * Util function to read the urls provided by the user in order to download the File
-     * If a link is provided the List will contain only 1 url
-     * else it will assume that file is provided
-     * @param urlArgument String that represent a url or local path
-     * @return List<URL> of all server links to download from
+     * Get the needed url addresses of the servers from the CMD or from a file
+     * @param urlArgument url address or file contains url addresses
+     * @return List<URL> contains all servers which will be managed by the DM
      */
     public static List<URL> parseUrlArgument(String urlArgument) {
         List<URL> urlsList = new ArrayList<>();
+        String usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
         boolean isUrlList = !urlArgument.startsWith("http://") && !urlArgument.startsWith("https://");
 
         try {
@@ -29,9 +28,9 @@ public class IdcDm {
                 urlsList.add(new URL(urlArgument));
             }
         } catch (MalformedURLException e) {
-            System.err.println("Fail to execute program, invalid url");
+            System.err.println("Error, invalid url\n" + usage);
         } catch (FileNotFoundException e) {
-            System.err.println("Fail to execute program, can't find urls list file");
+            System.err.println("Error, can't find urls list file\n" + usage);
         }
 
         return urlsList;
@@ -40,30 +39,36 @@ public class IdcDm {
     public static void main(String[] args) {
         // TODO: "https://archive.org/download/Mario1_500/ Mario1_500.avi" the ling is not vakid when there is a space
         // but this is the link from them example, how to handle it?
-        // TODO: handke exception all ver the program, to make sure the program is terminated
+        // TODO: handle exception all ver the program, to make sure the program is terminated
         int numberOfThreads = 0;
+        boolean isUrlArgumentValid = false;
+        String usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
         List<URL> urlsList = null;
-        boolean isNumOfThreadProvided = args.length == 2;
-
         try {
-            numberOfThreads = isNumOfThreadProvided ? Integer.parseInt(args[1]) : 1;
+            if (args.length == 0) {
+                System.err.println(usage);
+                return;
+            } else if (args.length == 1) {
+                numberOfThreads = 1;
+                urlsList = parseUrlArgument(args[0]);
+            } else if (args.length == 2) {
+                urlsList = parseUrlArgument(args[0]);
+                numberOfThreads = Integer.parseInt(args[1]);
+            } else {
+                System.err.println("Error, too much arguments \n" + usage);
+            }
         } catch (NumberFormatException e) {
-            System.err.println("Fail to execute program, invalid number of threads");
+            System.err.println("Error, please use vaild number\n" + usage);
         }
 
-        boolean isThreadsArgumentValid = numberOfThreads > 0;
 
-        if(isThreadsArgumentValid) {
-            urlsList = parseUrlArgument(args[0]);
-        }
+        isUrlArgumentValid = urlsList != null && urlsList.size() > 0;
 
-        boolean isUrlArgumentValid = urlsList != null && urlsList.size() > 0;
-
-        if(isUrlArgumentValid) {
+        if (isUrlArgumentValid) {
             DownloadManager downloadManager = new DownloadManager(urlsList, numberOfThreads);
-            if(!isNumOfThreadProvided){
+            if (args.length == 1) {
                 System.err.println("Downloading...");
-            }else{
+            } else {
                 System.err.printf("Downloading using %d connections...\n", numberOfThreads);
             }
             downloadManager.run();

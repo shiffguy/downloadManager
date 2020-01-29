@@ -9,24 +9,18 @@ public class MetaData implements Serializable {
     //region Fields
     private String tempSerializationPath;
     private String serializationPath;
-    private Boolean[] rangesStatus;
+    private int[] rangesStatus;
     private int downloadCounter;
     //endregion Fields
 
     private MetaData(int rangesAmount, String serializationPath){
-        this.rangesStatus = initRangesStatus(rangesAmount);
         this.serializationPath = serializationPath;
         this.tempSerializationPath =  this.serializationPath + "-temp";
+        this.rangesStatus = new int[rangesAmount];
+        for (int i = 0; i < rangesAmount ; i++) this.rangesStatus[i] = 0;
         this.downloadCounter = 0;
     }
 
-    private Boolean[] initRangesStatus(int rangesAmount) {
-        Boolean[] bs = new Boolean[rangesAmount];
-
-        Arrays.fill(bs, false);
-
-        return bs;
-    }
 
     /***
      * Method that provided an access to the metaData object
@@ -56,16 +50,16 @@ public class MetaData implements Serializable {
      * @param indexToUpdate index of the metadata object to update
      */
     public void UpdateIndex(int indexToUpdate){
-        rangesStatus[indexToUpdate] = true;
+        rangesStatus[indexToUpdate] = 1;
         writeToDisk();
     }
 
     public boolean IsIndexDownloaded(int indexToCheck){
-        return rangesStatus[indexToCheck];
+        return (rangesStatus[indexToCheck] == 1);
     }
 
     public boolean IsDownloadFinished() {
-        return !Arrays.asList(rangesStatus).contains(false);
+        return !Arrays.asList(rangesStatus).contains(0);
     }
 
     //region Serialization

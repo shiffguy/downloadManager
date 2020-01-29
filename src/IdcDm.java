@@ -63,9 +63,9 @@ public class IdcDm {
         }
 
 
-        isUrlArgumentValid = urlsList != null && urlsList.size() > 0;
+       // isUrlArgumentValid = urlsList != null && urlsList.size() > 0;
 
-        if (isUrlArgumentValid) {
+        if (urlsList.size() > 0) {
             DownloadManager downloadManager = new DownloadManager(urlsList, numberOfThreads);
             if (args.length == 1) {
                 System.err.println("Downloading...");

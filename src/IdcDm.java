@@ -14,18 +14,19 @@ public class IdcDm {
     public static List<URL> parseUrlArgument(String urlArgument) {
         List<URL> urlsList = new ArrayList<>();
         String usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
-        boolean isUrlList = !urlArgument.startsWith("http://") && !urlArgument.startsWith("https://");
+
 
         try {
-            if (isUrlList) {
+            if (urlArgument.startsWith("http://") || urlArgument.startsWith("https://")) {
+                urlsList.add(new URL(urlArgument));
+
+            } else {
                 Scanner scanner = new Scanner(new File(urlArgument));
                 scanner.useDelimiter(System.lineSeparator());
                 while (scanner.hasNext()) {
                     String url = scanner.next();
                     urlsList.add(new URL(url));
                 }
-            } else {
-                urlsList.add(new URL(urlArgument));
             }
         } catch (MalformedURLException e) {
             System.err.println("Error, invalid url\n" + usage);

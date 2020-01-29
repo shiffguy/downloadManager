@@ -31,17 +31,10 @@ public class MetaData implements Serializable {
      * @return MetaData object of the current file download
      */
     public static MetaData GetMetaData(int rangesAmount, String serializationPath){
-        MetaData metaData;
+
         File metaDataFile = new File(serializationPath).getAbsoluteFile();
-        boolean isDownloadResumed = metaDataFile.exists();
-
-        if(isDownloadResumed){
-            metaData = ReadFromDisk(serializationPath);
-        }else{
-            metaData =  new MetaData(rangesAmount, serializationPath);
-        }
-
-        return metaData;
+        if(!metaDataFile.exists()) return new MetaData(rangesAmount, serializationPath);
+        return ReadFromDisk(serializationPath);
     }
 
     /***

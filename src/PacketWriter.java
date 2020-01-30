@@ -30,10 +30,10 @@ public class PacketWriter implements Runnable {
         boolean isAllFileDownloaded = this.metaData.IsDownloadFinished();
         if (isAllFileDownloaded) {
             this.metaData.deleteMetaDataFile();
-            System.err.println("Download succeeded");
+            DmUI.printDownloadSucceeded();
         }
         else{
-            System.err.println("Download Fail, fail to download all packets. Restart download");
+            DmUI.printDownloadFailed();
         }
     }
 
@@ -65,7 +65,8 @@ public class PacketWriter implements Runnable {
 
             writePacket(dataToWrite, positionToUpdate);
             updateMetaData(packetIndex);
-            printDownloadStatus();
+            DmUI.printDownloadStatus(metaData, downloadStatus, firstPrint);
+            this.firstPrint = false;
         }
         return isFinnishDownload;
     }
@@ -81,18 +82,6 @@ public class PacketWriter implements Runnable {
         return dataToHandle.getKillStatus();
     }
 
-    /**
-     * Prints the current status of the download if the status (the decimal percent of packets downloaded) changed
-     */
-    private void printDownloadStatus() {
-        double downloadCounterStatus = metaData.GetDownloadCounter();
-        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
-        if (status != this.downloadStatus || this.firstPrint) {
-            this.downloadStatus = status;
-            System.err.printf("Downloaded %d%%\n", this.downloadStatus);
-            this.firstPrint = false;
-        }
-    }
 
     /**
      * Writes the data of a packet into the distance file
@@ -106,7 +95,7 @@ public class PacketWriter implements Runnable {
             randomAccessFile.seek(positionToUpdate);
             randomAccessFile.write(dataToWrite);
         } catch (IOException e) {
-            System.err.println("Fail to write packet to file");
+            DmUI.printFailedToWritePacket();
         }
     }
 
@@ -118,7 +107,7 @@ public class PacketWriter implements Runnable {
         try {
             boolean ignored = myFile.createNewFile();
         } catch (IOException e) {
-            System.err.println("Fail Downloading, could not create new file");
+            DmUI.printFileNotCreated();
             throw e;
         }
     }

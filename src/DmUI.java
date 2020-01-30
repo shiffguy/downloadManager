@@ -1,12 +1,17 @@
 public class DmUI {
 
-    private final static String Usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]\n";
-    private final static String ArgsOverflow = "Error, too much arguments \n";
-    private final static String NotAnInteger = "Error, please use vaild integer\n";
+    private final static String Usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
+    private final static String ArgsOverflow = "Error, too much arguments.";
+    private final static String NotAnInteger = "Error, please use vaild integer.";
     private final static String InvalidURL = "Error, invalid url\n";
-    private final static String FileNotFound = "Error, can't find file\n";
+    private final static String FileNotFound = "Error, can't find file.";
+    private final static String FileNotCreated = "Error, can't find file.";
     private final static String Downloading = "Downloading...";
-    private final static String ConnectionFailed = "Failed to connect to the server. Download failed.\n";
+    private final static String ConnectionFailed = "Failed to connect to the server. Download failed.";
+    private final static String DownloadSucceeded = "Download succeeded";
+    private final static String DownloadFailed = "Failed to download packets -> Download failed.";
+    private final static String FailedToWritePacket = "Failed to write packet to file. Download failed.";
+
 
     public static void printUsage() {
         System.err.println(Usage);
@@ -24,8 +29,20 @@ public class DmUI {
         System.err.println(Downloading);
     }
 
+    public static void printDownloadSucceeded() {
+        System.err.println(DownloadSucceeded);
+    }
+
+    public static void printDownloadFailed() {
+        System.err.println(DownloadFailed);
+    }
+
+    public static void printFailedToWritePacket() {
+        System.err.println(FailedToWritePacket);
+    }
+
     public static void printDownloadingN(int n) {
-        System.err.println("Downloading using %d connections..." + n);
+        System.err.println("Downloading using " + n + " connections...");
     }
 
     public static void printInvalidURL() {
@@ -39,6 +56,11 @@ public class DmUI {
     public static void printFileNotFound() {
         System.err.println(FileNotFound);
     }
+
+    public static void printFileNotCreated() {
+        System.err.println(FileNotCreated);
+    }
+
 
     public static void printFailedToDeleteMetaData(String s) {
         System.err.println("Failed to delete the metadata file" + s);
@@ -58,6 +80,15 @@ public class DmUI {
 
     public static void printStartDownloadMessage(long n,long start, long end) {
 
-        System.err.println("[" + n + " Start downloading range (" + start + " - " + end +") from:");
+        System.err.println("[" + n + "] Start downloading range (" + start + " - " + end +") from:");
+    }
+
+    public static void printDownloadStatus(MetaData metaData,int n, boolean b) {
+        double downloadCounterStatus = metaData.GetDownloadCounter();
+        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
+        if (status != n || b) {
+            n = status;
+            System.err.println("Downloaded " + n + "%");
+        }
     }
 }

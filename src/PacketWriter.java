@@ -104,7 +104,7 @@ public class PacketWriter implements Runnable {
     private void createDownloadFile() throws IOException {
         File myFile = new File(this.downloadedFilePath);
         try {
-            boolean ignored = myFile.createNewFile();
+            myFile.createNewFile();
         } catch (IOException e) {
             DmUI.printFileNotCreated();
             throw e;

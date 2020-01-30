@@ -4,23 +4,27 @@
  */
 public class PacketBuilder {
 
-    //region Fields
+
     private final int packetIndex;
     private long packetPosition;
     private byte[] bytesData;
     private boolean kill;
-    //endregion
 
-    //region Constructor
     public PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData, boolean kill){
         this.packetPosition = packetPosition;
         this.bytesData = bytesData;
         this.packetIndex = packetIndex;
         this.kill = kill;
     }
-    //endregion
 
-    //region Getters & Setters
+    public PacketBuilder(boolean kill) {
+        this.packetPosition = 0;
+        this.bytesData = null;
+        this.packetIndex = 0;
+        this.kill = kill;
+    }
+
+
     public long getPacketPosition() {
         return packetPosition;
     }
@@ -37,7 +41,5 @@ public class PacketBuilder {
     public boolean getKillStatus() {
         return kill;
     }
-    //endregion
-
 
 }

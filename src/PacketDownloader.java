@@ -4,6 +4,7 @@ import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PacketDownloader implements Runnable {
 
@@ -11,7 +12,8 @@ public class PacketDownloader implements Runnable {
     private static final int READ_TIME_OUT = 30 * 1000;  // Reading connection InputStream life time in MS
     //region Fields
     private final int packetIndex;
-    private LinkedBlockingDeque<DataWrapper> packetQueue;
+    private final boolean killStatus;
+    private LinkedBlockingQueue<DataWrapper> packetQueue;
     private URL source;
     private long packetStartPosition;
     private long packetEndPosition;
@@ -19,13 +21,14 @@ public class PacketDownloader implements Runnable {
 
     //region Constructor
 
-    PacketDownloader(LinkedBlockingDeque<DataWrapper> packetQueue, URL source,
-                     long packetStartPosition, long packetEndPosition, int packetIndex) {
+    PacketDownloader(LinkedBlockingQueue<DataWrapper> packetQueue, URL source,
+                     long packetStartPosition, long packetEndPosition, int packetIndex, boolean killStatus) {
         this.packetQueue = packetQueue;
         this.source = source;
         this.packetStartPosition = packetStartPosition;
         this.packetEndPosition = packetEndPosition;
         this.packetIndex = packetIndex;
+        this.killStatus = killStatus;
     }
     //endregion
 
@@ -35,9 +38,8 @@ public class PacketDownloader implements Runnable {
      * Handles the given packet by type
      */
     @Override
-    public void run() {
-        boolean isDataPacket = this.checkPacket();
-        if(isDataPacket){
+    public void run() { ;
+        if(!killStatus){
             this.handleDataPacket();
         }
         else{
@@ -49,13 +51,6 @@ public class PacketDownloader implements Runnable {
 
     //region Private Methods
 
-    /**
-     * Check the type of the packet
-     * @return true if data packet otherwise false (if poison pill packet)
-     */
-    private boolean checkPacket() {
-        return this.packetIndex != -1;
-    }
 
     /**
      * Handle packet of type poison pill. Create a message of type DataWrapper and push it to the queue. When the

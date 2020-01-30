@@ -2,16 +2,17 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class PacketWriter implements Runnable {
 
     private String downloadedFilePath;
-    private LinkedBlockingDeque<DataWrapper> packetDataQueue;
+    private LinkedBlockingQueue<DataWrapper> packetDataQueue;
     private MetaData metaData;
     private int downloadStatus;
     private boolean firstPrint;
 
-    PacketWriter(LinkedBlockingDeque<DataWrapper> packetDataQueue, MetaData metaData, String downloadedFileName) throws IOException {
+    PacketWriter(LinkedBlockingQueue<DataWrapper> packetDataQueue, MetaData metaData, String downloadedFileName) throws IOException {
         this.packetDataQueue = packetDataQueue;
         this.metaData = metaData;
         this.downloadedFilePath = downloadedFileName;

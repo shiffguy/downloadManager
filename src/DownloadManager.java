@@ -4,18 +4,14 @@ import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
 public class DownloadManager implements Runnable {
     //region Fields
     private static final int BUFFER_SIZE = 512 * 1000;  // Each download packet size
-    private static final String SERIALIZATION_PATH = "MetaData.ser";  // Path to save MetaDataFile
     private List<URL> urlsList;
-    private LinkedBlockingDeque<DataWrapper> packetDataQueue;
+    private LinkedBlockingQueue<DataWrapper> packetDataQueue;
     private ExecutorService packetDownloaderPool;
     private MetaData metaData;
     private long fileSize;
@@ -26,7 +22,7 @@ public class DownloadManager implements Runnable {
     //region Constructor
     public DownloadManager(List<URL> urlList, int numberOfThreads) {
         this.urlsList = urlList;
-        this.packetDataQueue = new LinkedBlockingDeque<>();
+        this.packetDataQueue = new LinkedBlockingQueue<>();
         this.packetDownloaderPool = Executors.newFixedThreadPool(numberOfThreads);
         this.urlIndex = 0;
     }
@@ -99,7 +95,7 @@ public class DownloadManager implements Runnable {
         long packetStartPosition = packetPositions[0];
         long packetEndPosition = packetPositions[1];
         PacketDownloader packetDownloader = new PacketDownloader(this.packetDataQueue, url,
-                packetStartPosition, packetEndPosition, packetIndex);
+                packetStartPosition, packetEndPosition, packetIndex, false);
 
         this.packetDownloaderPool.execute(packetDownloader);
         this.setNextUrlIndex();
@@ -138,7 +134,7 @@ public class DownloadManager implements Runnable {
      * Initiate a meta data object.
      */
     private void initMetaData(String destinationFilePath) {
-        this.metaData = MetaData.GetMetaData(getRangesAmount(), destinationFilePath + SERIALIZATION_PATH);
+        this.metaData = MetaData.GetMetaData(getRangesAmount(), destinationFilePath + "MetaData.ser");
     }
 
     /**

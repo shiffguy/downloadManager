@@ -1,4 +1,3 @@
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
@@ -11,7 +10,7 @@ public class DownloadManager implements Runnable {
     //region Fields
     private static final int BUFFER_SIZE = 512 * 1000;  // Each download packet size
     private List<URL> urlsList;
-    private LinkedBlockingQueue<DataWrapper> packetDataQueue;
+    private LinkedBlockingQueue<PacketBuilder> packetDataQueue;
     private ExecutorService packetDownloaderPool;
     private MetaData metaData;
     private long fileSize;
@@ -106,7 +105,7 @@ public class DownloadManager implements Runnable {
      */
     private void addKillPacket() {
 
-        packetDataQueue.add( new DataWrapper(-1, -1, null, true));
+        packetDataQueue.add( new PacketBuilder(-1, -1, null, true));
     }
 
     /**

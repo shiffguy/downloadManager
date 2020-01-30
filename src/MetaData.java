@@ -55,8 +55,7 @@ public class MetaData implements Serializable {
         return (rangesStatus[indexToCheck] == 1);
     }
 
-    public boolean IsDownloadFinished() {
-        return !Arrays.asList(rangesStatus).contains(0);
+    public boolean IsDownloadFinished() { return IntStream.of(rangesStatus).sum() == this.numberOfPackets;
     }
 
     //region Serialization
@@ -81,7 +80,9 @@ public class MetaData implements Serializable {
             try {
                 Files.move(tmpPath, destinationPath, StandardCopyOption.ATOMIC_MOVE);
                 isRenamed = true;
-            } catch (IOException ignored) { }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
     /***

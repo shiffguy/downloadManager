@@ -3,7 +3,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.ProtocolException;
 import java.net.URL;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class PacketDownloader implements Runnable {
@@ -13,7 +12,7 @@ public class PacketDownloader implements Runnable {
     //region Fields
     private final int packetIndex;
     private final boolean killStatus;
-    private LinkedBlockingQueue<DataWrapper> packetQueue;
+    private LinkedBlockingQueue<PacketBuilder> packetQueue;
     private URL source;
     private long packetStartPosition;
     private long packetEndPosition;
@@ -21,7 +20,7 @@ public class PacketDownloader implements Runnable {
 
     //region Constructor
 
-    PacketDownloader(LinkedBlockingQueue<DataWrapper> packetQueue, URL source,
+    PacketDownloader(LinkedBlockingQueue<PacketBuilder> packetQueue, URL source,
                      long packetStartPosition, long packetEndPosition, int packetIndex, boolean killStatus) {
         this.packetQueue = packetQueue;
         this.source = source;
@@ -58,7 +57,7 @@ public class PacketDownloader implements Runnable {
      * terminate.
      */
     private void addKillPacket(){
-        this.packetQueue.add(new DataWrapper(-1, -1, null, true));
+        this.packetQueue.add(new PacketBuilder(-1, -1, null, true));
     }
 
     /**
@@ -107,8 +106,8 @@ public class PacketDownloader implements Runnable {
         try {
             DmUI.printStartDownloadMessage(Thread.currentThread().getId(),packetStartPosition,packetEndPosition);
             byte[] buffer = inputStream.readAllBytes();
-            DataWrapper dataWrapper = new DataWrapper(packetIndex, packetStartPosition, buffer, false);
-            this.packetQueue.add(dataWrapper);
+            PacketBuilder packetBuilder = new PacketBuilder(packetIndex, packetStartPosition, buffer, false);
+            this.packetQueue.add(packetBuilder);
             DmUI.printFinishedToDownload(Thread.currentThread().getId());
         } catch (IOException e) {
             DmUI.printFailedToDownloadPacket(this.packetStartPosition, this.source.toString());

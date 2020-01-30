@@ -1,18 +1,17 @@
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class PacketWriter implements Runnable {
 
     private String downloadedFilePath;
-    private LinkedBlockingQueue<DataWrapper> packetDataQueue;
+    private LinkedBlockingQueue<PacketBuilder> packetDataQueue;
     private MetaData metaData;
     private int downloadStatus;
     private boolean firstPrint;
 
-    PacketWriter(LinkedBlockingQueue<DataWrapper> packetDataQueue, MetaData metaData, String downloadedFileName) throws IOException {
+    PacketWriter(LinkedBlockingQueue<PacketBuilder> packetDataQueue, MetaData metaData, String downloadedFileName) throws IOException {
         this.packetDataQueue = packetDataQueue;
         this.metaData = metaData;
         this.downloadedFilePath = downloadedFileName;
@@ -42,11 +41,11 @@ public class PacketWriter implements Runnable {
      * a poison pill packet which means that all producers finish to handle all tasks
      */
     private void writePackets() {
-        boolean isFinnishDownload = false;
-        while (!isFinnishDownload) {
-            DataWrapper dataToHandle = packetDataQueue.poll();
+        boolean isFinishedDownload = false;
+        while (!isFinishedDownload) {
+            PacketBuilder dataToHandle = packetDataQueue.poll();
             if (dataToHandle != null) {
-                isFinnishDownload = this.handlePacket(dataToHandle);
+                isFinishedDownload = this.handlePacket(dataToHandle);
             }
         }
     }
@@ -56,19 +55,19 @@ public class PacketWriter implements Runnable {
      * @param dataToHandle the last packet the wrter received
      * @return true if the producers finish to download all packets otherwise false
      */
-    private boolean handlePacket(DataWrapper dataToHandle){
-        boolean isFinnishDownload = this.checkIfKill(dataToHandle);
-        if (!isFinnishDownload) {
+    private boolean handlePacket(PacketBuilder dataToHandle){
+        boolean isFinishedDownload = this.checkIfKill(dataToHandle);
+        if (!isFinishedDownload) {
             long positionToUpdate = dataToHandle.getPacketNumber();
             int packetIndex = dataToHandle.getPacketIndex();
-            byte[] dataToWrite = dataToHandle.getPacket();
+            byte[] dataToWrite = dataToHandle.getBytesData();
 
             writePacket(dataToWrite, positionToUpdate);
             updateMetaData(packetIndex);
             DmUI.printDownloadStatus(metaData, downloadStatus, firstPrint);
             this.firstPrint = false;
         }
-        return isFinnishDownload;
+        return isFinishedDownload;
     }
 
     /**
@@ -78,7 +77,7 @@ public class PacketWriter implements Runnable {
      * @param dataToHandle the given packet to check
      * @return true if the packet is poison pill otherwise false
      */
-    private boolean checkIfKill(DataWrapper dataToHandle) {
+    private boolean checkIfKill(PacketBuilder dataToHandle) {
         return dataToHandle.getKillStatus();
     }
 

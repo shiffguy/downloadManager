@@ -1,20 +1,20 @@
 /***
- * This class represent a single downloaded packet
- * it contains the meta data attributes and the actual downloaded data
+ * Class that builds single downloaded/writable packet
+ * it contains data + metadata
  */
-public class DataWrapper {
+public class PacketBuilder {
 
     //region Fields
     private final int packetIndex;
     private long packetNumber;
-    private byte[] packet;
+    private byte[] bytesData;
     private boolean kill;
     //endregion
 
     //region Constructor
-    public DataWrapper(int packetIndex, long packetNumber, byte[] packet, boolean kill){
+    public PacketBuilder(int packetIndex, long packetNumber, byte[] bytesData, boolean kill){
         this.packetNumber = packetNumber;
-        this.packet = packet;
+        this.bytesData = bytesData;
         this.packetIndex = packetIndex;
         this.kill = kill;
     }
@@ -25,8 +25,8 @@ public class DataWrapper {
         return packetNumber;
     }
 
-    public byte[] getPacket() {
-        return packet;
+    public byte[] getBytesData() {
+        return bytesData;
     }
 
 

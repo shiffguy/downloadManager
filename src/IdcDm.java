@@ -19,7 +19,6 @@ public class IdcDm {
                 urlsList.add(new URL(urlArgument));
             } else {
                 Scanner scanner = new Scanner(new File(urlArgument));
-                //scanner.useDelimiter(System.lineSeparator());
                 while (scanner.hasNextLine()) {
                     String url = scanner.nextLine();
                     urlsList.add(new URL(url));

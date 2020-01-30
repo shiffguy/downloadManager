@@ -6,14 +6,14 @@ public class PacketBuilder {
 
     //region Fields
     private final int packetIndex;
-    private long packetNumber;
+    private long packetPosition;
     private byte[] bytesData;
     private boolean kill;
     //endregion
 
     //region Constructor
-    public PacketBuilder(int packetIndex, long packetNumber, byte[] bytesData, boolean kill){
-        this.packetNumber = packetNumber;
+    public PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData, boolean kill){
+        this.packetPosition = packetPosition;
         this.bytesData = bytesData;
         this.packetIndex = packetIndex;
         this.kill = kill;
@@ -21,8 +21,8 @@ public class PacketBuilder {
     //endregion
 
     //region Getters & Setters
-    public long getPacketNumber() {
-        return packetNumber;
+    public long getPacketPosition() {
+        return packetPosition;
     }
 
     public byte[] getBytesData() {

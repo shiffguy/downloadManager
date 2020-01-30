@@ -58,11 +58,11 @@ public class PacketWriter implements Runnable {
     private boolean handlePacket(PacketBuilder dataToHandle){
         boolean isFinishedDownload = this.checkIfKill(dataToHandle);
         if (!isFinishedDownload) {
-            long positionToUpdate = dataToHandle.getPacketNumber();
+            long updatedPosition = dataToHandle.getPacketPosition();
             int packetIndex = dataToHandle.getPacketIndex();
             byte[] dataToWrite = dataToHandle.getBytesData();
 
-            writePacket(dataToWrite, positionToUpdate);
+            writePacket(dataToWrite, updatedPosition);
             updateMetaData(packetIndex);
             DmUI.printDownloadStatus(metaData, downloadStatus, firstPrint);
             this.firstPrint = false;
@@ -71,11 +71,11 @@ public class PacketWriter implements Runnable {
     }
 
     /**
-     * Check if a given data wrapper is a data wrapper or a poison pill
-     * (poison pill is a message to the writer to terminate)
+     * Check if a given packet is kill packet in order to end the process
+     *
      *
      * @param dataToHandle the given packet to check
-     * @return true if the packet is poison pill otherwise false
+     * @return packet.getKillStatus() == true
      */
     private boolean checkIfKill(PacketBuilder dataToHandle) {
         return dataToHandle.getKillStatus();
@@ -83,15 +83,15 @@ public class PacketWriter implements Runnable {
 
 
     /**
-     * Writes the data of a packet into the distance file
+     * Writes data using randomAccessFile
      *
      * @param dataToWrite      byte array containing the data need to be written to the file
-     * @param positionToUpdate long number represent the position where the data need to written from
+     * @param updatedPosition long number represent the position where the data need to written from
      */
-    private void writePacket(byte[] dataToWrite, long positionToUpdate) {
+    private void writePacket(byte[] dataToWrite, long updatedPosition) {
         try (RandomAccessFile randomAccessFile = new RandomAccessFile(downloadedFilePath, "rw")) {
 
-            randomAccessFile.seek(positionToUpdate);
+            randomAccessFile.seek(updatedPosition);
             randomAccessFile.write(dataToWrite);
         } catch (IOException e) {
             DmUI.printFailedToWritePacket();
@@ -113,9 +113,9 @@ public class PacketWriter implements Runnable {
 
     /**
      * Update the meta data that a packet was downloaded
-     * @param positionToUpdate the position of the packet
+     * @param updatedPosition the position of the downloaded packet
      */
-    private void updateMetaData(int positionToUpdate) {
-        metaData.UpdateIndex(positionToUpdate);
+    private void updateMetaData(int updatedPosition) {
+        metaData.UpdateIndex(updatedPosition);
     }
 }

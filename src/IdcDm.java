@@ -15,14 +15,13 @@ public class IdcDm {
         List<URL> urlsList = new ArrayList<>();
 
         try {
-            if (urlArgument.startsWith("http://") || urlArgument.startsWith("https://")) {
+            if (urlArgument.matches("http(s)?://.*")) {
                 urlsList.add(new URL(urlArgument));
-
             } else {
                 Scanner scanner = new Scanner(new File(urlArgument));
-                scanner.useDelimiter(System.lineSeparator());
-                while (scanner.hasNext()) {
-                    String url = scanner.next();
+                //scanner.useDelimiter(System.lineSeparator());
+                while (scanner.hasNextLine()) {
+                    String url = scanner.nextLine();
                     urlsList.add(new URL(url));
                 }
             }
@@ -36,35 +35,32 @@ public class IdcDm {
     }
 
     public static void main(String[] args) {
-        // TODO: "https://archive.org/download/Mario1_500/ Mario1_500.avi" the ling is not vakid when there is a space
-        // but this is the link from them example, how to handle it?
-        // TODO: handle exception all ver the program, to make sure the program is terminated
+        int argsLen = args.length;
         int numberOfThreads = 0;
-        boolean isUrlArgumentValid = false;
         List<URL> urlsList = null;
         try {
-            if (args.length == 0) {
-                DmUI.printUsage();
-                return;
-            } else if (args.length == 1) {
-                numberOfThreads = 1;
-                urlsList = parseUrlArgument(args[0]);
-            } else if (args.length == 2) {
-                urlsList = parseUrlArgument(args[0]);
-                numberOfThreads = Integer.parseInt(args[1]);
-            } else {
-                DmUI.printArgsOverflow();
+            switch (argsLen){
+                case 1:
+                    numberOfThreads = 1;
+                    urlsList = parseUrlArgument(args[0]);
+                    break;
+                case 2:
+                    urlsList = parseUrlArgument(args[0]);
+                    numberOfThreads = Integer.parseInt(args[1]);
+                    break;
+                default:
+                    DmUI.printUsage();
+                    return;
             }
+
         } catch (NumberFormatException e) {
             DmUI.printNotAnInteger();
         }
 
-
-       // isUrlArgumentValid = urlsList != null && urlsList.size() > 0;
-
         if (urlsList.size() > 0) {
             DownloadManager downloadManager = new DownloadManager(urlsList, numberOfThreads);
-            if (args.length == 1) {
+
+            if (argsLen == 1) {
                 DmUI.printDownloading();
             } else {
                 DmUI.printDownloadingN(numberOfThreads);

@@ -39,7 +39,7 @@ public class DownloadManager implements Runnable {
         boolean isConnectionEstablish = fileSize != -1;
 
         if (!isConnectionEstablish) {
-            System.err.println("Download fail, fail to establish connection with server to get file size");
+            DmUI.printConnectionFailed();
             return;
         }
 
@@ -102,7 +102,7 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Creates a poison pill task and insert it to the thread pool
+     * Creates a kill packet and adds it to the queue
      */
     private void addKillPacket() {
 

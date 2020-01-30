@@ -85,14 +85,14 @@ public class PacketDownloader implements Runnable {
                 httpConnection.setConnectTimeout(REQUEST_TIME_OUT);
                 httpConnection.setReadTimeout(READ_TIME_OUT);
             } catch (ProtocolException e) {
-                System.err.printf("Fail to execute http request to %s, wrong request method\n", this.source.toString());
+                DmUI.printFailedHTTPRequest(this.source.toString());
             }
             httpConnection.setRequestProperty("Range", range);
             int responseCode = httpConnection.getResponseCode();
             inputStream = responseCode == HttpURLConnection.HTTP_PARTIAL ? httpConnection.getInputStream() : null;
 
         } catch (IOException e) {
-            System.err.printf("Fail to execute http request to %s\n", this.source.toString());
+            DmUI.printFailedHTTPRequest(this.source.toString());
         }
 
         return inputStream;
@@ -105,28 +105,14 @@ public class PacketDownloader implements Runnable {
      */
     private void downloadPacket(InputStream inputStream) {
         try {
-            printStartDownloadMessage();
+            DmUI.printStartDownloadMessage(Thread.currentThread().getId(),packetStartPosition,packetEndPosition);
             byte[] buffer = inputStream.readAllBytes();
             DataWrapper dataWrapper = new DataWrapper(packetIndex, packetStartPosition, buffer, false);
             this.packetQueue.add(dataWrapper);
-            printFinishedDownloadMessage();
+            DmUI.printFinishedToDownload(Thread.currentThread().getId());
         } catch (IOException e) {
-            System.err.printf("Fail to download packet %d from %s\n", this.packetStartPosition, this.source.toString());
+            DmUI.printFailedToDownloadPacket(this.packetStartPosition, this.source.toString());
         }
-    }
-
-    private void printFinishedDownloadMessage() {
-        System.err.printf("[%s] Finished downloading\n",
-                Thread.currentThread().getId());
-    }
-
-    private void printStartDownloadMessage() {
-        String sb = "";
-        sb += String.format("[%s] Start downloading range (%d- %d) from:\n",
-                Thread.currentThread().getId(), packetStartPosition, packetEndPosition);
-        sb += source;
-
-        System.err.println(sb);
     }
 
     /**

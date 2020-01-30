@@ -27,9 +27,9 @@ public class IdcDm {
                 }
             }
         } catch (MalformedURLException e) {
-            UI.
+            DmUI.printInvalidURL();
         } catch (FileNotFoundException e) {
-            System.err.println("Error, can't find urls list file\n" + usage);
+            DmUI.printFileNotFound();
         }
 
         return urlsList;
@@ -41,12 +41,10 @@ public class IdcDm {
         // TODO: handle exception all ver the program, to make sure the program is terminated
         int numberOfThreads = 0;
         boolean isUrlArgumentValid = false;
-        String usage = "usage:\n" +
-                "\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
         List<URL> urlsList = null;
         try {
             if (args.length == 0) {
-                System.err.println(usage);
+                DmUI.printUsage();
                 return;
             } else if (args.length == 1) {
                 numberOfThreads = 1;
@@ -55,10 +53,10 @@ public class IdcDm {
                 urlsList = parseUrlArgument(args[0]);
                 numberOfThreads = Integer.parseInt(args[1]);
             } else {
-                System.err.println("Error, too much arguments \n" + usage);
+                DmUI.printArgsOverflow();
             }
         } catch (NumberFormatException e) {
-            System.err.println("Error, please use vaild integer\n" + usage);
+            DmUI.printNotAnInteger();
         }
 
 
@@ -67,9 +65,9 @@ public class IdcDm {
         if (urlsList.size() > 0) {
             DownloadManager downloadManager = new DownloadManager(urlsList, numberOfThreads);
             if (args.length == 1) {
-                System.err.println("Downloading...");
+                DmUI.printDownloading();
             } else {
-                System.err.printf("Downloading using %d connections...\n", numberOfThreads);
+                DmUI.printDownloadingN(numberOfThreads);
             }
             downloadManager.run();
         }

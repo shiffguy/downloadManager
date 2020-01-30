@@ -111,7 +111,7 @@ public class MetaData implements Serializable {
         File metadataFile = new File(this.serializationPath);
 
         if(!metadataFile.delete()){
-            System.err.printf("Fail to delete metadata file %s\n", this.serializationPath);
+            DmUI.printFailedToDeleteMetaData(this.serializationPath);
         }
     }
 }

@@ -43,7 +43,8 @@ public class IdcDm {
         // TODO: handle exception all ver the program, to make sure the program is terminated
         int numberOfThreads = 0;
         boolean isUrlArgumentValid = false;
-        String usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
+        String usage = "usage:\n" +
+                "\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";
         List<URL> urlsList = null;
         try {
             if (args.length == 0) {
@@ -59,7 +60,7 @@ public class IdcDm {
                 System.err.println("Error, too much arguments \n" + usage);
             }
         } catch (NumberFormatException e) {
-            System.err.println("Error, please use vaild number\n" + usage);
+            System.err.println("Error, please use vaild integer\n" + usage);
         }
 
 

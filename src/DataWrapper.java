@@ -8,13 +8,15 @@ public class DataWrapper {
     private final int packetIndex;
     private long packetNumber;
     private byte[] packet;
+    private boolean kill;
     //endregion
 
     //region Constructor
-    public DataWrapper(int packetIndex, long packetNumber, byte[] packet){
+    public DataWrapper(int packetIndex, long packetNumber, byte[] packet, boolean kill){
         this.packetNumber = packetNumber;
         this.packet = packet;
         this.packetIndex = packetIndex;
+        this.kill = kill;
     }
     //endregion
 
@@ -30,6 +32,10 @@ public class DataWrapper {
 
     public int getPacketIndex() {
         return packetIndex;
+    }
+
+    public boolean getKillStatus() {
+        return kill;
     }
     //endregion
 

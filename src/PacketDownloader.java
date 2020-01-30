@@ -41,7 +41,7 @@ public class PacketDownloader implements Runnable {
             this.handleDataPacket();
         }
         else{
-            this.handlePoisonPill();
+            this.addKillPacket();
         }
     }
 
@@ -62,10 +62,10 @@ public class PacketDownloader implements Runnable {
      * writer will receive this packet it will now that the PacketDownloaders finish to handle all their tasks and it can
      * terminate.
      */
-    private void handlePoisonPill(){
-        DataWrapper poisonPill = new DataWrapper(-1, -1, null);
-        this.packetQueue.add(poisonPill);
+    private void addKillPacket(){
+        this.packetQueue.add(new DataWrapper(-1, -1, null, true));
     }
+
     /**
      * Handle a data type packet by creating a request for the data and put the data in the queue
      */
@@ -112,7 +112,7 @@ public class PacketDownloader implements Runnable {
         try {
             printStartDownloadMessage();
             byte[] buffer = inputStream.readAllBytes();
-            DataWrapper dataWrapper = new DataWrapper(packetIndex, packetStartPosition, buffer);
+            DataWrapper dataWrapper = new DataWrapper(packetIndex, packetStartPosition, buffer, false);
             this.packetQueue.add(dataWrapper);
             printFinishedDownloadMessage();
         } catch (IOException e) {

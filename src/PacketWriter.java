@@ -56,7 +56,7 @@ public class PacketWriter implements Runnable {
      * @return true if the producers finish to download all packets otherwise false
      */
     private boolean handlePacket(DataWrapper dataToHandle){
-        boolean isFinnishDownload = this.checkIfPoisonPill(dataToHandle);
+        boolean isFinnishDownload = this.checkIfKill(dataToHandle);
         if (!isFinnishDownload) {
             long positionToUpdate = dataToHandle.getPacketNumber();
             int packetIndex = dataToHandle.getPacketIndex();
@@ -76,8 +76,8 @@ public class PacketWriter implements Runnable {
      * @param dataToHandle the given packet to check
      * @return true if the packet is poison pill otherwise false
      */
-    private boolean checkIfPoisonPill(DataWrapper dataToHandle) {
-        return dataToHandle.getPacketIndex() == -1;
+    private boolean checkIfKill(DataWrapper dataToHandle) {
+        return dataToHandle.getKillStatus();
     }
 
     /**

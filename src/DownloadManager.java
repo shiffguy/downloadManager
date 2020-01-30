@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 public class DownloadManager implements Runnable {
     //region Fields
@@ -62,7 +63,7 @@ public class DownloadManager implements Runnable {
         this.packetDownloaderPool.shutdown();
         try {
             packetDownloaderPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            insertPoisonPill();
+            addKillPacket();
             writerThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -107,10 +108,9 @@ public class DownloadManager implements Runnable {
     /**
      * Creates a poison pill task and insert it to the thread pool
      */
-    private void insertPoisonPill() {
-        DataWrapper poisonPill = new DataWrapper(-1, -1, null);
+    private void addKillPacket() {
 
-        packetDataQueue.add(poisonPill);
+        packetDataQueue.add( new DataWrapper(-1, -1, null, true));
     }
 
     /**
@@ -138,8 +138,7 @@ public class DownloadManager implements Runnable {
      * Initiate a meta data object.
      */
     private void initMetaData(String destinationFilePath) {
-        destinationFilePath += SERIALIZATION_PATH;
-        this.metaData = MetaData.GetMetaData(getRangesAmount(), destinationFilePath);
+        this.metaData = MetaData.GetMetaData(getRangesAmount(), destinationFilePath + SERIALIZATION_PATH);
     }
 
     /**
@@ -147,7 +146,7 @@ public class DownloadManager implements Runnable {
      * @return the size of the file in bytes
      */
     private long getFileSize() {
-        // TODO: why loop?
+
         long fileSize = -1;
         for (URL url : this.urlsList) {
             HttpURLConnection httpConnection;
@@ -167,13 +166,8 @@ public class DownloadManager implements Runnable {
      * @return int, the amount of ranges
      */
     private int getRangesAmount() {
-        int rangesAmount = (int) (fileSize / BUFFER_SIZE);
-        long lastIndexReminder = fileSize % (long) BUFFER_SIZE;
-        boolean isReminderExists = lastIndexReminder != 0;
 
-        if (isReminderExists) {
-            rangesAmount++;
-        }
+        int rangesAmount = (fileSize % (long) BUFFER_SIZE == 0) ? (int) (fileSize / BUFFER_SIZE) : (int) (fileSize / BUFFER_SIZE) + 1;
 
         return rangesAmount;
     }
@@ -184,11 +178,7 @@ public class DownloadManager implements Runnable {
      */
     private List<long[]> getPacketsRanges() {
         List<long[]> packetRanges = new ArrayList<>();
-
-        for (int i = 0; i < getRangesAmount(); i++) {
-            packetRanges.add(get_byte_range(i));
-        }
-
+        IntStream.range(0, getRangesAmount()).forEach(i ->  packetRanges.add(get_byte_range(i)));
         return packetRanges;
     }
 

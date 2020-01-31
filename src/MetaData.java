@@ -48,11 +48,9 @@ public class MetaData implements Serializable {
     }
 
     public boolean IsIndexDownloaded(int indexToCheck){
-        return (currStatus[indexToCheck] == 1);
-    }
+        return (currStatus[indexToCheck] == 1); }
 
-    public boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks;
-    }
+    public boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks; }
 
     public int GetCounterOfDownloadedPackets(){
         return this.counterOfDownloadedPackets;
@@ -93,6 +91,7 @@ public class MetaData implements Serializable {
         boolean isRenamed = false;
         while(!isRenamed){
             try {
+                //Atomic_Move in order to be sure in the renaming
                 Files.move(tempPath, destPath, StandardCopyOption.ATOMIC_MOVE);
                 isRenamed = true;
             } catch (IOException e) {

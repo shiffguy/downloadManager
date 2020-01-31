@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 
 public class DownloadManager implements Runnable {
 
-    private static final int BUFFER_SIZE = 512 * 1000;  // Each download packet size
+    private static final int BUFFER_SIZE = 512 * 1000;  // Each chunk of data size
     private List<URL> urlsList;
     private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
     private ExecutorService threadsPool;

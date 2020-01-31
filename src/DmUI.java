@@ -5,7 +5,7 @@ public class DmUI {
     private final static String NotAnInteger = "Error, please use vaild integer.";
     private final static String InvalidURL = "Error, invalid url\n";
     private final static String FileNotFound = "Error, can't find file.";
-    private final static String FileNotCreated = "Error, can't find file.";
+    private final static String FileNotCreated = "Error, can't create file.";
     private final static String Downloading = "Downloading...";
     private final static String ConnectionFailed = "Failed to connect to the server. Download failed.";
     private final static String DownloadSucceeded = "Download succeeded";
@@ -84,8 +84,8 @@ public class DmUI {
     }
 
     public static void printDownloadStatus(MetaData metaData,int n, boolean b) {
-        double downloadCounterStatus = metaData.GetDownloadCounter();
-        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
+        double downloadCounterStatus = metaData.GetCounterOfDownloadedPackets();
+        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfChunks()) * 100);
         if (status != n || b) {
             n = status;
             System.err.println("Downloaded " + n + "%");

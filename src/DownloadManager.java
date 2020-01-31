@@ -11,8 +11,8 @@ public class DownloadManager implements Runnable {
 
     private static final int BUFFER_SIZE = 512 * 1000;  // Each download packet size
     private List<URL> urlsList;
-    private LinkedBlockingQueue<PacketBuilder> packetDataQueue;
-    private ExecutorService packetDownloaderPool;
+    private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
+    private ExecutorService threadsPool;
     private MetaData metaData;
     private long fileSize;
     private static List<long[]> packetPositionsPairs;
@@ -20,8 +20,8 @@ public class DownloadManager implements Runnable {
 
     public DownloadManager(List<URL> urlList, int numberOfThreads) {
         this.urlsList = urlList;
-        this.packetDataQueue = new LinkedBlockingQueue<>();
-        this.packetDownloaderPool = Executors.newFixedThreadPool(numberOfThreads);
+        this.packetsBlockingQueue = new LinkedBlockingQueue<>();
+        this.threadsPool = Executors.newFixedThreadPool(numberOfThreads);
         this.urlIndex = 0;
     }
 
@@ -39,21 +39,21 @@ public class DownloadManager implements Runnable {
         }
 
         String url = this.urlsList.get(0).toString();
-        String destinationFilePath = url.substring( url.lastIndexOf('/')+1);
+        String destFilePath = url.substring( url.lastIndexOf('/')+1);
 
-        this.initMetaData(destinationFilePath);
-        packetPositionsPairs = this.getPacketsRanges();
+        this.initMetaData(destFilePath);
+        packetPositionsPairs = this.getChunksRanges();
 
         Thread writerThread;
         try {
-            writerThread = this.initPacketWriteThread(destinationFilePath);
+            writerThread = this.initPacketWriteThread(destFilePath);
         } catch (IOException e) {
             return;
         }
         accumulatePackets();
-        this.packetDownloaderPool.shutdown();
+        this.threadsPool.shutdown();
         try {
-            packetDownloaderPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            threadsPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
             addKillPacket();
             writerThread.join();
         } catch (InterruptedException e) {
@@ -87,12 +87,12 @@ public class DownloadManager implements Runnable {
      */
     private void createTask(int packetIndex, long[] packetPositions) {
         URL url = this.urlsList.get(urlIndex);
-        long packetStartPosition = packetPositions[0];
-        long packetEndPosition = packetPositions[1];
-        PacketDownloader packetDownloader = new PacketDownloader(this.packetDataQueue, url,
-                packetStartPosition, packetEndPosition, packetIndex, false);
+        long chunkStartPos = packetPositions[0];
+        long chunkEndPos = packetPositions[1];
+        PacketDownloader packetDownloader = new PacketDownloader(this.packetsBlockingQueue, url,
+                chunkStartPos, chunkEndPos, packetIndex, false);
 
-        this.packetDownloaderPool.execute(packetDownloader);
+        this.threadsPool.execute(packetDownloader);
         if(this.urlsList.size()-1 == this.urlIndex){
             this.urlIndex = 0;
         } else {
@@ -105,18 +105,18 @@ public class DownloadManager implements Runnable {
      */
     private void addKillPacket() {
 
-        packetDataQueue.add( new PacketBuilder(true));
+        packetsBlockingQueue.add( new PacketBuilder(true));
     }
 
     /**
      * Initiate the packet writer thread
      * @return the thread object of the packet writer
      */
-    private Thread initPacketWriteThread(String destinationFileName) throws IOException {
+    private Thread initPacketWriteThread(String destFileName) throws IOException {
         PacketWriter packetWrite;
 
         try {
-            packetWrite = new PacketWriter(packetDataQueue, metaData, destinationFileName);
+            packetWrite = new PacketWriter(packetsBlockingQueue, metaData, destFileName);
         }
         catch (IOException e){
             System.err.println(e.getMessage());
@@ -132,8 +132,8 @@ public class DownloadManager implements Runnable {
     /**
      * Initiate a meta data object.
      */
-    private void initMetaData(String destinationFilePath) {
-        this.metaData = MetaData.GetMetaData(getRangesAmount(), destinationFilePath + "MetaData.ser");
+    private void initMetaData(String destFilePath) {
+        this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + "MetaData.ser");
     }
 
     /**
@@ -160,7 +160,7 @@ public class DownloadManager implements Runnable {
      * Calculate the amount of packet that are needed in order to download the file
      * @return int, the amount of ranges
      */
-    private int getRangesAmount() {
+    private int getNumOfChunks() {
         return (fileSize % (long) BUFFER_SIZE == 0) ? (int) (fileSize / BUFFER_SIZE) : (int) (fileSize / BUFFER_SIZE) + 1;
     }
 
@@ -168,24 +168,24 @@ public class DownloadManager implements Runnable {
      * Craete a list that contains all the ranges of the packets of the file
      * @return the list of the ranges
      */
-    private List<long[]> getPacketsRanges() {
+    private List<long[]> getChunksRanges() {
         List<long[]> packetRanges = new ArrayList<>();
-        IntStream.range(0, getRangesAmount()).forEach(i ->  packetRanges.add(get_byte_range(i)));
+        IntStream.range(0, getNumOfChunks()).forEach(i ->  packetRanges.add(getBytesOfChunkRange(i)));
         return packetRanges;
     }
 
     /**
-     * Calculate the range (start byte and end byte) of a given packet
-     * @param packetStartPosition the index of the packet
-     * @return array where at index 0 is the starting byte range and in index 1 the end byte range
+     * Calculate the range (start byte and end byte) of the requested chunk
+     * @param chunkStartPos the start index of the chunk of packets
+     * @return array of tuples which for every tuple 0 - start , 1 - end
      */
-    private long[] get_byte_range(long packetStartPosition) {
-        long packetStartByte = packetStartPosition * BUFFER_SIZE;
-        long packetEndByte = packetStartByte + BUFFER_SIZE - 1;
-        boolean isRangeValid = packetEndByte < this.fileSize;
-        packetEndByte = isRangeValid ? packetEndByte : this.fileSize;
+    private long[] getBytesOfChunkRange(long chunkStartPos) {
+        long chunkStartByte = chunkStartPos * BUFFER_SIZE;
+        long chunkEndByte = chunkStartByte + BUFFER_SIZE - 1;
+        boolean isValidRange = chunkEndByte < this.fileSize;
+        chunkEndByte = isValidRange ? chunkEndByte : this.fileSize;
 
-        return new long[]{packetStartByte, packetEndByte};
+        return new long[]{chunkStartByte, chunkEndByte};
     }
     //endregion
 }

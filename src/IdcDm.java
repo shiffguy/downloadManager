@@ -8,17 +8,17 @@ import java.util.Scanner;
 public class IdcDm {
     /***
      * Get the needed url addresses of the servers from the CMD or from a file
-     * @param urlArgument url address or file contains url addresses
+     * @param firstUrlArg url address or file contains url addresses
      * @return List<URL> contains all servers which will be managed by the DM
      */
-    public static List<URL> parseUrlArgument(String urlArgument) {
+    public static List<URL> readCommandLineFirstUrlArg(String firstUrlArg) {
         List<URL> urlsList = new ArrayList<>();
 
         try {
-            if (urlArgument.matches("http(s)?://.*")) {
-                urlsList.add(new URL(urlArgument));
+            if (firstUrlArg.matches("http(s)?://.*")) {
+                urlsList.add(new URL(firstUrlArg));
             } else {
-                Scanner scanner = new Scanner(new File(urlArgument));
+                Scanner scanner = new Scanner(new File(firstUrlArg));
                 while (scanner.hasNextLine()) {
                     String url = scanner.nextLine();
                     urlsList.add(new URL(url));
@@ -41,10 +41,10 @@ public class IdcDm {
             switch (argsLen){
                 case 1:
                     numberOfThreads = 1;
-                    urlsList = parseUrlArgument(args[0]);
+                    urlsList = readCommandLineFirstUrlArg(args[0]);
                     break;
                 case 2:
-                    urlsList = parseUrlArgument(args[0]);
+                    urlsList = readCommandLineFirstUrlArg(args[0]);
                     numberOfThreads = Integer.parseInt(args[1]);
                     break;
                 default:

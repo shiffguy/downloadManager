@@ -3,41 +3,37 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.Arrays;
 import java.util.stream.IntStream;
 
 public class MetaData implements Serializable {
-    //region Fields
-    private String tempSerializationPath;
-    private String serializationPath;
-    private int[] rangesStatus;
-    private int numberOfPackets;
-    private int downloadCounter;
-    //endregion Fields
+    private String tempSerPath;
+    private String serPath;
+    private int[] currStatus;
+    private int numOfChunks;
+    private int counterOfDownloadedPackets;
 
-    private MetaData(int rangesAmount, String serializationPath){
-        this.serializationPath = serializationPath;
-        this.tempSerializationPath =  this.serializationPath + "-temp";
-        this.numberOfPackets = rangesAmount;
-        this.rangesStatus = new int[rangesAmount];
-        IntStream.range(0, rangesAmount).forEach(i -> this.rangesStatus[i] = 0);
-        this.downloadCounter = 0;
+    private MetaData(int numOfChunks, String serPath){
+        this.serPath = serPath;
+        this.tempSerPath =  this.serPath + "-temp";
+        this.numOfChunks = numOfChunks;
+        this.currStatus = new int[numOfChunks];
+        IntStream.range(0, numOfChunks).forEach(i -> this.currStatus[i] = 0);
+        this.counterOfDownloadedPackets = 0;
     }
 
 
     /***
-     * Method that provided an access to the metaData object
-     * If metaData already exist it will take that object
-     * else it will create new MetaData object
-     * @param rangesAmount packet ranges amount (file size / buffer size)
-     * @param serializationPath name of the file to download
-     * @return MetaData object of the current file download
+     * GetMetaData - if the metadata file has been created
+     * it will get it, otherwise create new metadata file
+     * @param counterOfDownloadedPackets counter of chunks (file size / buffer size)
+     * @param serPath name of the dest file for packets
+     * @return current MetaData object
      */
-    public static MetaData GetMetaData(int rangesAmount, String serializationPath){
+    public static MetaData GetMetaData(int counterOfDownloadedPackets, String serPath){
 
-        File metaDataFile = new File(serializationPath).getAbsoluteFile();
-        if(!metaDataFile.exists()) return new MetaData(rangesAmount, serializationPath);
-        MetaData metaData = ReadFromDisk(serializationPath);
+        File metaDataFile = new File(serPath).getAbsoluteFile();
+        if(!metaDataFile.exists()) return new MetaData(counterOfDownloadedPackets, serPath);
+        MetaData metaData = ReadFromDisk(serPath);
         return metaData;
     }
 
@@ -47,15 +43,15 @@ public class MetaData implements Serializable {
      * @param indexToUpdate index of the metadata object to update
      */
     public void UpdateIndex(int indexToUpdate){
-        rangesStatus[indexToUpdate] = 1;
+        currStatus[indexToUpdate] = 1;
         writeToDisk();
     }
 
     public boolean IsIndexDownloaded(int indexToCheck){
-        return (rangesStatus[indexToCheck] == 1);
+        return (currStatus[indexToCheck] == 1);
     }
 
-    public boolean IsDownloadFinished() { return IntStream.of(rangesStatus).sum() == this.numberOfPackets;
+    public boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks;
     }
 
     //region Serialization
@@ -64,21 +60,21 @@ public class MetaData implements Serializable {
      * Commit the MetaData serialization writing
      */
     private void writeToDisk(){
-        try(FileOutputStream fileOutputStream = new FileOutputStream(tempSerializationPath);
+        try(FileOutputStream fileOutputStream = new FileOutputStream(tempSerPath);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)){
             objectOutputStream.writeObject(this);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        this.downloadCounter++;
-        File tmp = new File(this.tempSerializationPath);
-        Path tmpPath = Paths.get(tmp.getAbsolutePath());
-        File destination = new File(this.serializationPath).getAbsoluteFile();
-        Path destinationPath = Paths.get(destination.getAbsolutePath());
+        this.counterOfDownloadedPackets++;
+        File temp = new File(this.tempSerPath);
+        Path tempPath = Paths.get(temp.getAbsolutePath());
+        File dest = new File(this.serPath).getAbsoluteFile();
+        Path destPath = Paths.get(dest.getAbsolutePath());
         boolean isRenamed = false;
         while(!isRenamed){
             try {
-                Files.move(tmpPath, destinationPath, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tempPath, destPath, StandardCopyOption.ATOMIC_MOVE);
                 isRenamed = true;
             } catch (IOException e) {
                 e.printStackTrace();
@@ -86,7 +82,7 @@ public class MetaData implements Serializable {
         }
     }
     /***
-     * Commit the MetaData serialization reading
+     * Read from the metadata file
      */
     private static MetaData ReadFromDisk(String serializationPath){
         MetaData metaData = null;
@@ -100,19 +96,18 @@ public class MetaData implements Serializable {
         return metaData;
     }
 
-    //endregion Serialization
 
-    public int GetDownloadCounter(){
-        return this.downloadCounter;
+    public int GetCounterOfDownloadedPackets(){
+        return this.counterOfDownloadedPackets;
     }
 
-    public int GetNumberOfPackets() {return this.numberOfPackets;}
+    public int GetNumberOfChunks() {return this.numOfChunks;}
 
-    public void deleteMetaDataFile() {
-        File metadataFile = new File(this.serializationPath);
+    public void deleteMetaData() {
+        File metadataFile = new File(this.serPath);
 
         if(!metadataFile.delete()){
-            DmUI.printFailedToDeleteMetaData(this.serializationPath);
+            DmUI.printFailedToDeleteMetaData(this.serPath);
         }
     }
 }

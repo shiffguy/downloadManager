@@ -11,18 +11,18 @@ public class PacketDownloader implements Runnable {
     private static final int READ_TIME_OUT = 30 * 1000;
     private final int packetIndex;
     private final boolean killStatus;
-    private LinkedBlockingQueue <PacketBuilder> packetQueue;
-    private URL source;
-    private long packetStartPosition;
-    private long packetEndPosition;
+    private LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue;
+    private URL httpRequestedUrl;
+    private long chunkStartPos;
+    private long chunkEndPos;
 
 
-    PacketDownloader(LinkedBlockingQueue <PacketBuilder> packetQueue, URL source,
-                     long packetStartPosition, long packetEndPosition, int packetIndex, boolean killStatus) {
-        this.packetQueue = packetQueue;
-        this.source = source;
-        this.packetStartPosition = packetStartPosition;
-        this.packetEndPosition = packetEndPosition;
+    PacketDownloader(LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue, URL httpRequestedUrl,
+                     long chunkStartPos, long chunkEndPos, int packetIndex, boolean killStatus) {
+        this.packetsBlockingQueue = packetsBlockingQueue;
+        this.httpRequestedUrl = httpRequestedUrl;
+        this.chunkStartPos = chunkStartPos;
+        this.chunkEndPos = chunkEndPos;
         this.packetIndex = packetIndex;
         this.killStatus = killStatus;
     }
@@ -39,36 +39,36 @@ public class PacketDownloader implements Runnable {
         if (!killStatus) {
             InputStream inputStream = null;
             try {
-                String range = String.format("Bytes=%d-%d", packetStartPosition, packetEndPosition);
-                HttpURLConnection httpConnection = (HttpURLConnection) source.openConnection();
+                String range = String.format("Bytes=%d-%d", chunkStartPos, chunkEndPos);
+                HttpURLConnection httpConnection = (HttpURLConnection) httpRequestedUrl.openConnection();
                 try {
                     httpConnection.setRequestMethod("GET");
                     httpConnection.setConnectTimeout(REQUEST_TIME_OUT);
                     httpConnection.setReadTimeout(READ_TIME_OUT);
                 } catch (ProtocolException e) {
-                    DmUI.printFailedHTTPRequest(this.source.toString());
+                    DmUI.printFailedHTTPRequest(this.httpRequestedUrl.toString());
                 }
                 httpConnection.setRequestProperty("Range", range);
                 int responseCode = httpConnection.getResponseCode();
                 inputStream = responseCode == HttpURLConnection.HTTP_PARTIAL ? httpConnection.getInputStream() : null;
 
             } catch (IOException e) {
-                DmUI.printFailedHTTPRequest(this.source.toString());
+                DmUI.printFailedHTTPRequest(this.httpRequestedUrl.toString());
             }
 
             if (inputStream != null) {
                 try {
-                    DmUI.printStartDownloadMessage(Thread.currentThread().getId(), packetStartPosition, packetEndPosition);
+                    DmUI.printStartDownloadMessage(Thread.currentThread().getId(), chunkStartPos, chunkEndPos);
                     byte[] buffer = inputStream.readAllBytes();
-                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, packetStartPosition, buffer);
-                    this.packetQueue.add(packetBuilder);
+                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, chunkStartPos, buffer);
+                    this.packetsBlockingQueue.add(packetBuilder);
                     DmUI.printFinishedToDownload(Thread.currentThread().getId());
                 } catch (IOException e) {
-                    DmUI.printFailedToDownloadPacket(this.packetStartPosition, this.source.toString());
+                    DmUI.printFailedToDownloadPacket(this.chunkStartPos, this.httpRequestedUrl.toString());
                 }
             }
         } else {
-            this.packetQueue.add(new PacketBuilder(true));
+            this.packetsBlockingQueue.add(new PacketBuilder(true));
         }
     }
 }

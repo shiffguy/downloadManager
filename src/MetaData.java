@@ -54,10 +54,29 @@ public class MetaData implements Serializable {
     public boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks;
     }
 
-    //region Serialization
+    public int GetCounterOfDownloadedPackets(){
+        return this.counterOfDownloadedPackets;
+    }
+
+    public int GetNumberOfPackets() {return this.numOfChunks;}
 
     /***
-     * Commit the MetaData serialization writing
+     * Read from the metadata file
+     */
+    private static MetaData ReadFromDisk(String serializationPath){
+        MetaData metaData = null;
+        try(FileInputStream fileInputStream = new FileInputStream(serializationPath);
+            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)){
+            metaData = (MetaData) objectInputStream.readObject();
+        } catch (ClassNotFoundException | IOException e) {
+            e.printStackTrace();
+        }
+
+        return metaData;
+    }
+
+    /***
+     * Write to the metadata file
      */
     private void writeToDisk(){
         try(FileOutputStream fileOutputStream = new FileOutputStream(tempSerPath);
@@ -81,27 +100,7 @@ public class MetaData implements Serializable {
             }
         }
     }
-    /***
-     * Read from the metadata file
-     */
-    private static MetaData ReadFromDisk(String serializationPath){
-        MetaData metaData = null;
-        try(FileInputStream fileInputStream = new FileInputStream(serializationPath);
-            ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)){
-            metaData = (MetaData) objectInputStream.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            e.printStackTrace();
-        }
 
-        return metaData;
-    }
-
-
-    public int GetCounterOfDownloadedPackets(){
-        return this.counterOfDownloadedPackets;
-    }
-
-    public int GetNumberOfPackets() {return this.numOfChunks;}
 
     public void deleteMetaData() {
         File metadataFile = new File(this.serPath);

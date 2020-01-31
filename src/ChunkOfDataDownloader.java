@@ -5,7 +5,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class PacketDownloader implements Runnable {
+public class ChunkOfDataDownloader implements Runnable {
 
     private static final int REQUEST_TIME_OUT = 30 * 1000;
     private static final int READ_TIME_OUT = 30 * 1000;
@@ -17,7 +17,7 @@ public class PacketDownloader implements Runnable {
     private long chunkEndPos;
 
 
-    PacketDownloader(LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue, URL httpRequestedUrl,
+    ChunkOfDataDownloader(LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue, URL httpRequestedUrl,
                      long chunkStartPos, long chunkEndPos, int packetIndex, boolean killStatus) {
         this.packetsBlockingQueue = packetsBlockingQueue;
         this.httpRequestedUrl = httpRequestedUrl;

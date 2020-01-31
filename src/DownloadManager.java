@@ -26,14 +26,13 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Initiate a download process of a single file which includes accumulating download tasks to a packet downloaders
-     * pool and running a packet writer thread that write the downloaded packets to the destination file.
+     * Initiate a download process of the file from the given urls using threads and dividing the data into chunks
      */
     public void run() {
         this.fileSize = this.getFileSize();
-        boolean isConnectionEstablish = fileSize != -1;
+        boolean isSuccessfulConnection = fileSize != -1;
 
-        if (!isConnectionEstablish) {
+        if (!isSuccessfulConnection) {
             DmUI.printConnectionFailed();
             return;
         }
@@ -62,8 +61,7 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Accumulates tasks for the thread pool of the packet downloaders. At the end create a poison pill task to inform
-     * the writer that all task are done.
+     * Accumulates tasks for the threads in thread pool. Stops where gets a kill packet
      */
     private void accumulatePackets() {
         int packetIndex = 0;
@@ -80,19 +78,18 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Create a new task to the packet downloaders pool.
+     * Creates new task fir any of the threads, to download specific chunks of data
      * @param packetIndex the index of the packet
-     * @param packetPositions long array where at index 0 is the start byte of the packet and index 1 is the end byte of
-     *                        the packet
+     * @param packetPositions array of tuples which for every tuple 0 - start , 1 - end
      */
     private void createTask(int packetIndex, long[] packetPositions) {
         URL url = this.urlsList.get(urlIndex);
         long chunkStartPos = packetPositions[0];
         long chunkEndPos = packetPositions[1];
-        PacketDownloader packetDownloader = new PacketDownloader(this.packetsBlockingQueue, url,
+        ChunkOfDataDownloader ChunkOfDataDownloader = new ChunkOfDataDownloader(this.packetsBlockingQueue, url,
                 chunkStartPos, chunkEndPos, packetIndex, false);
 
-        this.threadsPool.execute(packetDownloader);
+        this.threadsPool.execute(ChunkOfDataDownloader);
         if(this.urlsList.size()-1 == this.urlIndex){
             this.urlIndex = 0;
         } else {
@@ -109,8 +106,8 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Initiate the packet writer thread
-     * @return the thread object of the packet writer
+     * Initiate the PacketWriter
+     * @return thread which holds the PacketWriter
      */
     private Thread initPacketWriteThread(String destFileName) throws IOException {
         PacketWriter packetWrite;
@@ -130,7 +127,7 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Initiate a meta data object.
+     * Initiate a metadata file object.
      */
     private void initMetaData(String destFilePath) {
         this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + "MetaData.ser");
@@ -157,7 +154,7 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Calculate the amount of packet that are needed in order to download the file
+     * Calculate the right number of chunks of data that are needed in order to download the file
      * @return int, the amount of ranges
      */
     private int getNumOfChunks() {
@@ -165,7 +162,7 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Craete a list that contains all the ranges of the packets of the file
+     * Craetes list which contains all the ranges of the right chunks of data
      * @return the list of the ranges
      */
     private List<long[]> getChunksRanges() {
@@ -187,7 +184,6 @@ public class DownloadManager implements Runnable {
 
         return new long[]{chunkStartByte, chunkEndByte};
     }
-    //endregion
 }
 
 

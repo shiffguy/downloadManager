@@ -1,13 +1,14 @@
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.net.URL;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
 public class DownloadManager implements Runnable {
-    //region Fields
+
     private static final int BUFFER_SIZE = 512 * 1000;  // Each download packet size
     private List<URL> urlsList;
     private LinkedBlockingQueue<PacketBuilder> packetDataQueue;
@@ -16,18 +17,13 @@ public class DownloadManager implements Runnable {
     private long fileSize;
     private static List<long[]> packetPositionsPairs;
     private int urlIndex;
-    // endregion
 
-    //region Constructor
     public DownloadManager(List<URL> urlList, int numberOfThreads) {
         this.urlsList = urlList;
         this.packetDataQueue = new LinkedBlockingQueue<>();
         this.packetDownloaderPool = Executors.newFixedThreadPool(numberOfThreads);
         this.urlIndex = 0;
     }
-    //endregion
-
-    //region Public methods
 
     /**
      * Initiate a download process of a single file which includes accumulating download tasks to a packet downloaders
@@ -64,22 +60,22 @@ public class DownloadManager implements Runnable {
             e.printStackTrace();
         }
     }
-    // endregion
 
-    // region Private methods
     /**
      * Accumulates tasks for the thread pool of the packet downloaders. At the end create a poison pill task to inform
      * the writer that all task are done.
      */
     private void accumulatePackets() {
         int packetIndex = 0;
-        for (long[] packetPositions : packetPositionsPairs) {
+        Iterator<long[]> positions = packetPositionsPairs.iterator();
+        while (positions.hasNext()){
+            long[] packetPositions = positions.next();
             boolean isPacketDownloaded = metaData.IsIndexDownloaded(packetIndex);
             if (!isPacketDownloaded) {
                 createTask(packetIndex, packetPositions);
             }
-
             packetIndex++;
+
         }
     }
 
@@ -97,7 +93,11 @@ public class DownloadManager implements Runnable {
                 packetStartPosition, packetEndPosition, packetIndex, false);
 
         this.packetDownloaderPool.execute(packetDownloader);
-        this.setNextUrlIndex();
+        if(this.urlsList.size()-1 == this.urlIndex){
+            this.urlIndex = 0;
+        } else {
+            this.urlIndex++;
+        }
     }
 
     /**
@@ -105,7 +105,7 @@ public class DownloadManager implements Runnable {
      */
     private void addKillPacket() {
 
-        packetDataQueue.add( new PacketBuilder(-1, -1, null, true));
+        packetDataQueue.add( new PacketBuilder(true));
     }
 
     /**
@@ -161,10 +161,7 @@ public class DownloadManager implements Runnable {
      * @return int, the amount of ranges
      */
     private int getRangesAmount() {
-
-        int rangesAmount = (fileSize % (long) BUFFER_SIZE == 0) ? (int) (fileSize / BUFFER_SIZE) : (int) (fileSize / BUFFER_SIZE) + 1;
-
-        return rangesAmount;
+        return (fileSize % (long) BUFFER_SIZE == 0) ? (int) (fileSize / BUFFER_SIZE) : (int) (fileSize / BUFFER_SIZE) + 1;
     }
 
     /**
@@ -175,13 +172,6 @@ public class DownloadManager implements Runnable {
         List<long[]> packetRanges = new ArrayList<>();
         IntStream.range(0, getRangesAmount()).forEach(i ->  packetRanges.add(get_byte_range(i)));
         return packetRanges;
-    }
-
-    /**
-     * Sets the next index that will choose the next url to download a packet from
-     */
-    private void setNextUrlIndex() {
-        this.urlIndex = this.urlIndex < this.urlsList.size() - 1 ? ++this.urlIndex : 0;
     }
 
     /**

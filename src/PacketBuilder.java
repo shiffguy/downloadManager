@@ -10,11 +10,11 @@ public class PacketBuilder {
     private byte[] bytesData;
     private boolean kill;
 
-    public PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData, boolean kill){
+    public PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData){
         this.packetPosition = packetPosition;
         this.bytesData = bytesData;
         this.packetIndex = packetIndex;
-        this.kill = kill;
+        this.kill = false;
     }
 
     public PacketBuilder(boolean kill) {

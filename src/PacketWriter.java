@@ -63,7 +63,7 @@ public class PacketWriter implements Runnable {
             byte[] dataToWrite = dataToHandle.getBytesData();
 
             writePacket(dataToWrite, updatedPosition);
-            updateMetaData(packetIndex);
+            metaData.UpdateIndex(packetIndex);
             DmUI.printDownloadStatus(metaData, downloadStatus, firstPrint);
             this.firstPrint = false;
         }
@@ -109,13 +109,5 @@ public class PacketWriter implements Runnable {
             DmUI.printFileNotCreated();
             throw e;
         }
-    }
-
-    /**
-     * Update the meta data that a packet was downloaded
-     * @param updatedPosition the position of the downloaded packet
-     */
-    private void updateMetaData(int updatedPosition) {
-        metaData.UpdateIndex(updatedPosition);
     }
 }

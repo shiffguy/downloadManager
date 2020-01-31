@@ -52,25 +52,14 @@ public class PacketWriter implements Runnable {
         if (!isDownloadCompleted) {
             long updatedPosition = dataOfPacket.getPacketPosition();
             int packetIndex = dataOfPacket.getPacketIndex();
-            byte[] dataToWrite = dataOfPacket.getBytesData();
+            byte[] DataBytesOfPacketToWrite = dataOfPacket.getBytesData();
 
-            writeDataOfPacket(dataToWrite, updatedPosition);
+            writeDataOfPacket(DataBytesOfPacketToWrite, updatedPosition);
             metaData.UpdateIndex(packetIndex);
             DmUI.printDownloadStatus(metaData, statusOfProgressDownload, openingPrint);
             this.openingPrint = false;
         }
         return isDownloadCompleted;
-    }
-
-    /**
-     * Check if a given packet is kill packet in order to end the process
-     *
-     *
-     * @param dataOfPacket the given packet to check
-     * @return packet.getKillStatus() == true
-     */
-    private boolean checkIfKill(PacketBuilder dataOfPacket) {
-        return dataOfPacket.getKillStatus();
     }
 
 
@@ -102,4 +91,9 @@ public class PacketWriter implements Runnable {
             throw e;
         }
     }
+
+    private boolean checkIfKill(PacketBuilder dataOfPacket) {
+        return dataOfPacket.getKillStatus();
+    }
+
 }

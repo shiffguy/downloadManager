@@ -6,7 +6,7 @@ import java.net.URL;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ChunkOfDataDownloader implements Runnable {
-    private static final int REQUEST_TIME_OUT = 30 * 1000; //request timeout for the http timeout
+    private static final int CONNECT_TIME_OUT = 30 * 1000; //connect timeout for the http timeout
     private static final int READ_TIME_OUT = 30 * 1000; //read timeout for the http read timeout
     private final int packetIndex;
     private final boolean killStatus;
@@ -26,9 +26,7 @@ public class ChunkOfDataDownloader implements Runnable {
         this.killStatus = killStatus;
     }
 
-    /**
-     * Handles the given packet by type
-     */
+
     @Override
     public void run() {
 
@@ -39,7 +37,7 @@ public class ChunkOfDataDownloader implements Runnable {
                 HttpURLConnection httpConnection = (HttpURLConnection) httpRequestedUrl.openConnection();
                 try {
                     httpConnection.setRequestMethod("GET");
-                    httpConnection.setConnectTimeout(REQUEST_TIME_OUT);
+                    httpConnection.setConnectTimeout(CONNECT_TIME_OUT);
                     httpConnection.setReadTimeout(READ_TIME_OUT);
                 } catch (ProtocolException e) {
                     DmUI.printFailedHTTPRequest(this.httpRequestedUrl.toString());

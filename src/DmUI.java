@@ -67,11 +67,11 @@ public class DmUI {
     }
 
     static void printFailedHTTPRequest(String s) {
-        System.err.println("HTTP request to" + s + "has been failed");
+        System.err.println("HTTP request to " + s + " has been failed");
     }
 
     static void printFailedToDownloadPacket(long start ,String s) {
-        System.err.println("Failed to download packet " + start + "from " + s);
+        System.err.println("Failed to download chunk of data " + start + " from " + s);
     }
 
     static void printFinishedToDownload(long n) {

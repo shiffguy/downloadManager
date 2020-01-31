@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 
 public class DownloadManager implements Runnable {
 
-    private static final int BUFFER_SIZE = 512 * 1000;  // Each chunk of data size
+    private static final int BUFFER_SIZE = 500000;  // Each chunk of data size
     private List<URL> urlsList;
     private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
     private ExecutorService threadsPool;
@@ -40,7 +40,7 @@ public class DownloadManager implements Runnable {
         String url = this.urlsList.get(0).toString();
         String destFilePath = url.substring( url.lastIndexOf('/')+1);
 
-        this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + "MetaData.ser");
+        this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + ".tmp");
         chunksStartAndEndPositions = this.getChunksRanges();
 
         Thread writerThread;

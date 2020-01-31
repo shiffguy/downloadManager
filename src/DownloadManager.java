@@ -15,13 +15,13 @@ public class DownloadManager implements Runnable {
     private ExecutorService threadsPool;
     private MetaData metaData;
     private long fileSize;
-    private static List<long[]> packetPositionsPairs;
+    private static List<long[]> chunksStartAndEndPositions;
     private int urlIndex;
 
-    public DownloadManager(List<URL> urlList, int numberOfThreads) {
+    public DownloadManager(List<URL> urlList, int numOfThreads) {
         this.urlsList = urlList;
         this.packetsBlockingQueue = new LinkedBlockingQueue<>();
-        this.threadsPool = Executors.newFixedThreadPool(numberOfThreads);
+        this.threadsPool = Executors.newFixedThreadPool(numOfThreads);
         this.urlIndex = 0;
     }
 
@@ -40,8 +40,8 @@ public class DownloadManager implements Runnable {
         String url = this.urlsList.get(0).toString();
         String destFilePath = url.substring( url.lastIndexOf('/')+1);
 
-        this.initMetaData(destFilePath);
-        packetPositionsPairs = this.getChunksRanges();
+        this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + "MetaData.ser");
+        chunksStartAndEndPositions = this.getChunksRanges();
 
         Thread writerThread;
         try {
@@ -49,7 +49,7 @@ public class DownloadManager implements Runnable {
         } catch (IOException e) {
             return;
         }
-        accumulatePackets();
+        IteratesPackets();
         this.threadsPool.shutdown();
         try {
             threadsPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
@@ -61,11 +61,11 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Accumulates tasks for the threads in thread pool. Stops where gets a kill packet
+     * Iterates and sets tasks for the threads in thread pool. Stops where gets a kill packet
      */
-    private void accumulatePackets() {
+    private void IteratesPackets() {
         int packetIndex = 0;
-        Iterator<long[]> positions = packetPositionsPairs.iterator();
+        Iterator<long[]> positions = chunksStartAndEndPositions.iterator();
         while (positions.hasNext()){
             long[] packetPositions = positions.next();
             boolean isPacketDownloaded = metaData.IsIndexDownloaded(packetIndex);
@@ -126,12 +126,6 @@ public class DownloadManager implements Runnable {
         return packetWriteThread;
     }
 
-    /**
-     * Initiate a metadata file object.
-     */
-    private void initMetaData(String destFilePath) {
-        this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + "MetaData.ser");
-    }
 
     /**
      * Create a http get request to get the size in bytes of the requested download file.

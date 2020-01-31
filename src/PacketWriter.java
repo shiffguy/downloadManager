@@ -91,7 +91,7 @@ public class PacketWriter implements Runnable {
     }
 
     /**
-     * Create the destination of the download file if doesn't exists
+     * Create the destination file of the downloaded packets of data
      */
     private void createDestFile() throws IOException {
         File myFile = new File(this.downloadedFilePath);

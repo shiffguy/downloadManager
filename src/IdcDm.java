@@ -35,17 +35,17 @@ public class IdcDm {
 
     public static void main(String[] args) {
         int argsLen = args.length;
-        int numberOfThreads = 0;
+        int numOfThreads = 0;
         List<URL> urlsList = null;
         try {
             switch (argsLen){
                 case 1:
-                    numberOfThreads = 1;
+                    numOfThreads = 1;
                     urlsList = readCommandLineFirstUrlArg(args[0]);
                     break;
                 case 2:
                     urlsList = readCommandLineFirstUrlArg(args[0]);
-                    numberOfThreads = Integer.parseInt(args[1]);
+                    numOfThreads = Integer.parseInt(args[1]);
                     break;
                 default:
                     DmUI.printUsage();
@@ -57,12 +57,12 @@ public class IdcDm {
         }
 
         if (urlsList.size() > 0) {
-            DownloadManager downloadManager = new DownloadManager(urlsList, numberOfThreads);
+            DownloadManager downloadManager = new DownloadManager(urlsList, numOfThreads);
 
             if (argsLen == 1) {
                 DmUI.printDownloading();
             } else {
-                DmUI.printDownloadingN(numberOfThreads);
+                DmUI.printDownloadingN(numOfThreads);
             }
             downloadManager.run();
         }

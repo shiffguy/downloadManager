@@ -13,77 +13,77 @@ public class DmUI {
     private final static String FailedToWritePacket = "Failed to write packet to file. Download failed.";
 
 
-    public static void printUsage() {
+    static void printUsage() {
         System.err.println(Usage);
     }
 
-    public static void printArgsOverflow() {
+    static void printArgsOverflow() {
         System.err.println(ArgsOverflow);
     }
 
-    public static void printNotAnInteger() {
+    static void printNotAnInteger() {
         System.err.println(NotAnInteger);
     }
 
-    public static void printDownloading() {
+    static void printDownloading() {
         System.err.println(Downloading);
     }
 
-    public static void printDownloadSucceeded() {
+    static void printDownloadSucceeded() {
         System.err.println(DownloadSucceeded);
     }
 
-    public static void printDownloadFailed() {
+    static void printDownloadFailed() {
         System.err.println(DownloadFailed);
     }
 
-    public static void printFailedToWritePacket() {
+    static void printFailedToWritePacket() {
         System.err.println(FailedToWritePacket);
     }
 
-    public static void printDownloadingN(int n) {
+    static void printDownloadingN(int n) {
         System.err.println("Downloading using " + n + " connections...");
     }
 
-    public static void printInvalidURL() {
+    static void printInvalidURL() {
         System.err.println(InvalidURL);
     }
 
-    public static void printConnectionFailed() {
+    static void printConnectionFailed() {
         System.err.println(ConnectionFailed);
     }
 
-    public static void printFileNotFound() {
+    static void printFileNotFound() {
         System.err.println(FileNotFound);
     }
 
-    public static void printFileNotCreated() {
+    static void printFileNotCreated() {
         System.err.println(FileNotCreated);
     }
 
 
-    public static void printFailedToDeleteMetaData(String s) {
+    static void printFailedToDeleteMetaData(String s) {
         System.err.println("Failed to delete the metadata file" + s);
     }
 
-    public static void printFailedHTTPRequest(String s) {
+    static void printFailedHTTPRequest(String s) {
         System.err.println("HTTP request to" + s + "has been failed");
     }
 
-    public static void printFailedToDownloadPacket(long start ,String s) {
+    static void printFailedToDownloadPacket(long start ,String s) {
         System.err.println("Failed to download packet " + start + "from " + s);
     }
 
-    public static void printFinishedToDownload(long n) {
+    static void printFinishedToDownload(long n) {
         System.err.println("[" + n + "] Finished downloading");
     }
 
-    public static void printStartDownloadMessage(long n,long start, long end) {
+    static void printStartDownloadMessage(long n,long start, long end) {
 
         System.err.println("[" + n + "] Start downloading range (" + start + " - " + end +") from:");
     }
 
-    public static void printDownloadStatus(MetaData metaData,int n, boolean b) {
+    static void printDownloadStatus(MetaData metaData, int n, boolean b) {
         double downloadCounterStatus = metaData.GetCounterOfDownloadedPackets();
         int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
         if (status != n || b) {

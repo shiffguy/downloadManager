@@ -6,9 +6,8 @@ import java.net.URL;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ChunkOfDataDownloader implements Runnable {
-
-    private static final int REQUEST_TIME_OUT = 30 * 1000;
-    private static final int READ_TIME_OUT = 30 * 1000;
+    private static final int REQUEST_TIME_OUT = 30 * 1000; //request timeout for the http timeout
+    private static final int READ_TIME_OUT = 30 * 1000; //read timeout for the http read timeout
     private final int packetIndex;
     private final boolean killStatus;
     private LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue;

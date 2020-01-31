@@ -25,9 +25,6 @@ public class ChunkOfDataDownloader implements Runnable {
         this.packetIndex = packetIndex;
         this.killStatus = killStatus;
     }
-    //endregion
-
-    //region Public Methods
 
     /**
      * Handles the given packet by type

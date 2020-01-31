@@ -38,8 +38,7 @@ public class MetaData implements Serializable {
     }
 
     /***
-     * Update the boolean array of the meta data object
-     * and commit serialization writing
+     * Updates currStatus array with 1 in the current packet index
      * @param indexToUpdate index of the metadata object to update
      */
     public void UpdateIndex(int indexToUpdate){
@@ -61,9 +60,9 @@ public class MetaData implements Serializable {
     /***
      * Read from the metadata file
      */
-    private static MetaData ReadFromDisk(String serializationPath){
+    private static MetaData ReadFromDisk(String serPath){
         MetaData metaData = null;
-        try(FileInputStream fileInputStream = new FileInputStream(serializationPath);
+        try(FileInputStream fileInputStream = new FileInputStream(serPath);
             ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream)){
             metaData = (MetaData) objectInputStream.readObject();
         } catch (ClassNotFoundException | IOException e) {

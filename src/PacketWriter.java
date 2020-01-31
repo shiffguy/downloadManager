@@ -15,17 +15,23 @@ public class PacketWriter implements Runnable {
         this.packetsBlockingQueue = packetsBlockingQueue;
         this.metaData = metaData;
         this.downloadedFilePath = downloadedFileName;
-        this.statusOfProgressDownload = this.metaData.GetCounterOfDownloadedPackets() / this.metaData.GetNumberOfChunks();
+        this.statusOfProgressDownload = this.metaData.GetCounterOfDownloadedPackets() / this.metaData.GetNumberOfPackets();
         this.openingPrint = true;
         createDestFile();
     }
 
     /**
-     * Write all the downloaded packets to the file and update the user if the file was downloaded successfully or not.
+     * Write all the data to the dest file.
      */
     @Override
     public void run() {
-        this.pollOutPacketsToWrite();
+        boolean isDownloadCompleted = false;
+        while (!isDownloadCompleted) {
+            PacketBuilder dataOfPacket = packetsBlockingQueue.poll();
+            if (dataOfPacket != null) {
+                isDownloadCompleted = this.processSinglePacketData(dataOfPacket);
+            }
+        }
         boolean isWholeFileCompleteDownload = this.metaData.IsDownloadCompleted();
         if (isWholeFileCompleteDownload) {
             this.metaData.deleteMetaData();
@@ -37,23 +43,9 @@ public class PacketWriter implements Runnable {
     }
 
     /**
-     * Receive new packet from the queue and write the data to the new file. This method will stop when it will receive
-     * a poison pill packet which means that all producers finish to handle all tasks
-     */
-    private void pollOutPacketsToWrite() {
-        boolean isDownloadCompleted = false;
-        while (!isDownloadCompleted) {
-            PacketBuilder dataToHandle = packetsBlockingQueue.poll();
-            if (dataToHandle != null) {
-                isDownloadCompleted = this.processSinglePacketData(dataToHandle);
-            }
-        }
-    }
-
-    /**
-     * Check the type of the packet, if the packet is data packet then this function will write the data to the file
-     * @param dataOfPacket the last packet the wrter received
-     * @return true if the producers finish to download all packets otherwise false
+     * Checks the packet, until it is not the kill packet will write it to the file
+     * @param dataOfPacket curr packet of data
+     * @return true if we got kill packet and thus download is completed
      */
     private boolean processSinglePacketData(PacketBuilder dataOfPacket){
         boolean isDownloadCompleted = this.checkIfKill(dataOfPacket);
@@ -62,7 +54,7 @@ public class PacketWriter implements Runnable {
             int packetIndex = dataOfPacket.getPacketIndex();
             byte[] dataToWrite = dataOfPacket.getBytesData();
 
-            writeChunkOfData(dataToWrite, updatedPosition);
+            writeDataOfPacket(dataToWrite, updatedPosition);
             metaData.UpdateIndex(packetIndex);
             DmUI.printDownloadStatus(metaData, statusOfProgressDownload, openingPrint);
             this.openingPrint = false;
@@ -88,7 +80,7 @@ public class PacketWriter implements Runnable {
      * @param dataToWrite      byte array containing the data need to be written to the file
      * @param updatedPosition long number represent the position where the data need to written from
      */
-    private void writeChunkOfData(byte[] dataToWrite, long updatedPosition) {
+    private void writeDataOfPacket(byte[] dataToWrite, long updatedPosition) {
         try (RandomAccessFile randomAccessFile = new RandomAccessFile(downloadedFilePath, "rw")) {
 
             randomAccessFile.seek(updatedPosition);

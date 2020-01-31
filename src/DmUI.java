@@ -85,7 +85,7 @@ public class DmUI {
 
     public static void printDownloadStatus(MetaData metaData,int n, boolean b) {
         double downloadCounterStatus = metaData.GetCounterOfDownloadedPackets();
-        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfChunks()) * 100);
+        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
         if (status != n || b) {
             n = status;
             System.err.println("Downloaded " + n + "%");

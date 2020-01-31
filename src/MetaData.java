@@ -101,7 +101,7 @@ public class MetaData implements Serializable {
         return this.counterOfDownloadedPackets;
     }
 
-    public int GetNumberOfChunks() {return this.numOfChunks;}
+    public int GetNumberOfPackets() {return this.numOfChunks;}
 
     public void deleteMetaData() {
         File metadataFile = new File(this.serPath);

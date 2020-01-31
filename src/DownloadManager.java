@@ -169,9 +169,9 @@ public class DownloadManager implements Runnable {
      * @return the list of the ranges
      */
     private List<long[]> getChunksRanges() {
-        List<long[]> packetRanges = new ArrayList<>();
-        IntStream.range(0, getNumOfChunks()).forEach(i ->  packetRanges.add(getBytesOfChunkRange(i)));
-        return packetRanges;
+        List<long[]> chunksRanges = new ArrayList<>();
+        IntStream.range(0, getNumOfChunks()).forEach(i ->  chunksRanges.add(getBytesOfChunkRange(i)));
+        return chunksRanges;
     }
 
     /**

@@ -2,43 +2,40 @@
  * Class that builds single downloaded/writable packet
  * it contains data + metadata
  */
-public class PacketBuilder {
-
+class PacketBuilder {
 
     private final int packetIndex;
     private long packetPosition;
     private byte[] bytesData;
     private boolean kill;
 
-    public PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData){
+    PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData){
         this.packetPosition = packetPosition;
         this.bytesData = bytesData;
         this.packetIndex = packetIndex;
         this.kill = false;
     }
 
-    public PacketBuilder(boolean kill) {
+    PacketBuilder(boolean kill) {
         this.packetPosition = 0;
         this.bytesData = null;
         this.packetIndex = 0;
         this.kill = kill;
     }
 
-
-    public long getPacketPosition() {
+    long getPacketPosition() {
         return packetPosition;
     }
 
-    public byte[] getBytesData() {
+    byte[] getBytesData() {
         return bytesData;
     }
 
-
-    public int getPacketIndex() {
+    int getPacketIndex() {
         return packetIndex;
     }
 
-    public boolean getKillStatus() {
+    boolean getKillStatus() {
         return kill;
     }
 

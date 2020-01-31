@@ -5,7 +5,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.stream.IntStream;
 
-public class MetaData implements Serializable {
+class MetaData implements Serializable {
     private String tempSerPath;
     private String serPath;
     private int[] currStatus;
@@ -29,7 +29,7 @@ public class MetaData implements Serializable {
      * @param serPath name of the dest file for packets
      * @return current MetaData object
      */
-    public static MetaData GetMetaData(int counterOfDownloadedPackets, String serPath){
+    static MetaData GetMetaData(int counterOfDownloadedPackets, String serPath){
 
         File metaDataFile = new File(serPath).getAbsoluteFile();
         if(!metaDataFile.exists()) return new MetaData(counterOfDownloadedPackets, serPath);
@@ -41,21 +41,21 @@ public class MetaData implements Serializable {
      * Updates currStatus array with 1 in the current packet index
      * @param indexToUpdate index of the metadata object to update
      */
-    public void UpdateIndex(int indexToUpdate){
+    void UpdateIndex(int indexToUpdate){
         currStatus[indexToUpdate] = 1;
         writeToDisk();
     }
 
-    public boolean IsIndexDownloaded(int indexToCheck){
+    boolean IsIndexDownloaded(int indexToCheck){
         return (currStatus[indexToCheck] == 1); }
 
-    public boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks; }
+    boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks; }
 
-    public int GetCounterOfDownloadedPackets(){
+    int GetCounterOfDownloadedPackets(){
         return this.counterOfDownloadedPackets;
     }
 
-    public int GetNumberOfPackets() {return this.numOfChunks;}
+    int GetNumberOfPackets() {return this.numOfChunks;}
 
     /***
      * Read from the metadata file
@@ -100,7 +100,7 @@ public class MetaData implements Serializable {
     }
 
 
-    public void deleteMetaData() {
+    void deleteMetaData() {
         File metadataFile = new File(this.serPath);
 
         if(!metadataFile.delete()){

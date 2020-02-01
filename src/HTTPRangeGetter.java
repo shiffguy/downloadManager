@@ -8,17 +8,17 @@ public class HTTPRangeGetter implements Runnable {
     private LinkedBlockingQueue <PacketBuilder> blockingQueue;
     private long chunkStartPos;
     private long chunkEndPos;
-    private final int packetIndex;
+    private final int index;
     private final boolean isEndPacket;
 
 
     HTTPRangeGetter(LinkedBlockingQueue <PacketBuilder> blockingQueue, URL httpRequestedUrl,
-                    long chunkStartPos, long chunkEndPos, int packetIndex, boolean isEndPacket) {
+                    long chunkStartPos, long chunkEndPos, int index, boolean isEndPacket) {
         this.httpRequestedUrl = httpRequestedUrl;
         this.blockingQueue = blockingQueue;
         this.chunkStartPos = chunkStartPos;
         this.chunkEndPos = chunkEndPos;
-        this.packetIndex = packetIndex;
+        this.index = index;
         this.isEndPacket = isEndPacket;
     }
 
@@ -48,7 +48,7 @@ public class HTTPRangeGetter implements Runnable {
                 try {
                     DmUI.printBeginningDownload(Thread.currentThread().getId(), chunkStartPos, chunkEndPos);
                     byte[] dataChunkSize = inputStream.readAllBytes();
-                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, chunkStartPos, dataChunkSize);
+                    PacketBuilder packetBuilder = new PacketBuilder(index, chunkStartPos, dataChunkSize);
                     this.blockingQueue.add(packetBuilder);
                     DmUI.printFinishedToDownload(Thread.currentThread().getId());
                     inputStream.close();

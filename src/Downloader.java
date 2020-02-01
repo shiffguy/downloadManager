@@ -6,20 +6,20 @@ import java.net.*;
 
 public class Downloader implements Runnable {
 
-    private List<URL> urlsList;
+    private List<URL> urls;
     private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
     private static List<long[]> chunksStartAndEndPositions;
+    private int urlIndex;
     private ExecutorService threadsPool;
     private long fileSize;
-    private int urlIndex;
-    private MetaData metaData;
     private static final int dataChunkSize = 500000;  // Each chunk of data size
+    private MetaData metaData;
 
-    Downloader(List<URL> urlList, int maxNumOfConnections) {
-        this.urlsList = urlList;
-        this.packetsBlockingQueue = new LinkedBlockingQueue<>();
-        this.threadsPool = Executors.newFixedThreadPool(maxNumOfConnections);
+    Downloader(List<URL> urls, int maxNumOfConnections) {
+        this.urls = urls;
         this.urlIndex = 0;
+        this.threadsPool = Executors.newFixedThreadPool(maxNumOfConnections);
+        this.packetsBlockingQueue = new LinkedBlockingQueue<>();
     }
 
     public void run() {
@@ -31,7 +31,7 @@ public class Downloader implements Runnable {
             return;
         }
 
-        String url = this.urlsList.get(0).toString();
+        String url = this.urls.get(0).toString();
         String destFilePath = url.substring( url.lastIndexOf('/')+1);
 
         this.metaData = MetaData.GetMetaData(getNumOfChunks(), destFilePath + ".tmp");
@@ -58,7 +58,7 @@ public class Downloader implements Runnable {
 
         HttpURLConnection httpConnection;
         long fileSize = -1;
-        URL url = urlsList.get(0);
+        URL url = urls.get(0);
         try {
             httpConnection = (HttpURLConnection) url.openConnection();
             fileSize = httpConnection.getContentLengthLong();
@@ -91,14 +91,14 @@ public class Downloader implements Runnable {
     }
 
     private void newThreadJob(int packetIndex, long[] chunksPositions) {
-        URL url = this.urlsList.get(urlIndex);
+        URL url = this.urls.get(urlIndex);
         long chunkStartPos = chunksPositions[0];
         long chunkEndPos = chunksPositions[1];
         HTTPRangeGetter HTTPRangeGetter = new HTTPRangeGetter(this.packetsBlockingQueue, url,
                 chunkStartPos, chunkEndPos, packetIndex, false);
 
         this.threadsPool.execute(HTTPRangeGetter);
-        if(this.urlsList.size()-1 == this.urlIndex){
+        if(this.urls.size()-1 == this.urlIndex){
             this.urlIndex = 0;
         } else {
             this.urlIndex++;

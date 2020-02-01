@@ -1,43 +1,20 @@
-import java.io.*;
 import java.net.*;
 import java.util.*;
 
 public class IdcDm {
 
-    private static List<URL> readCommandLineFirstUrlArg(String firstUrlArg) {
-        List<URL> urlsList = new ArrayList<>();
-
-        try {
-            if (firstUrlArg.matches("http(s)?://.*")) {
-                urlsList.add(new URL(firstUrlArg));
-            } else {
-                Scanner scanner = new Scanner(new File(firstUrlArg));
-                while (scanner.hasNextLine()) {
-                    String url = scanner.nextLine();
-                    urlsList.add(new URL(url));
-                }
-            }
-        } catch (MalformedURLException e) {
-            DmUI.printInvalidURL();
-        } catch (FileNotFoundException e) {
-            DmUI.printFileNotFound();
-        }
-
-        return urlsList;
-    }
-
     public static void main(String[] args) {
         int argsLen = args.length;
         int maxNumOfConnections = 0;
-        List<URL> urlsList = null;
+        List<URL> urls = null;
         try {
             switch (argsLen){
                 case 1:
                     maxNumOfConnections = 1;
-                    urlsList = readCommandLineFirstUrlArg(args[0]);
+                    urls = UrlManager.manageUrls(args[0]);
                     break;
                 case 2:
-                    urlsList = readCommandLineFirstUrlArg(args[0]);
+                    urls = UrlManager.manageUrls(args[0]);
                     maxNumOfConnections = Integer.parseInt(args[1]);
                     break;
                 default:
@@ -49,8 +26,8 @@ public class IdcDm {
             DmUI.printNotAnInteger();
         }
 
-        if (urlsList.size() > 0) {
-            Downloader downloader = new Downloader(urlsList, maxNumOfConnections);
+        if (urls.size() > 0) {
+            Downloader downloader = new Downloader(urls, maxNumOfConnections);
 
             if (argsLen == 1) {
                 DmUI.printDownloading();

@@ -49,8 +49,8 @@ public class FileWriter implements Runnable {
     private boolean processSinglePacketData(PacketBuilder dataOfPacket){
         boolean isDownloadCompleted = this.isEndPacket(dataOfPacket);
         if (!isDownloadCompleted) {
-            long updatedPosition = dataOfPacket.getPacketPosition();
-            int packetIndex = dataOfPacket.getPacketIndex();
+            long updatedPosition = dataOfPacket.getPosition();
+            int packetIndex = dataOfPacket.getIndex();
             byte[] DataBytesOfPacketToWrite = dataOfPacket.getBytesData();
 
             writeDataOfPacket(DataBytesOfPacketToWrite, updatedPosition);

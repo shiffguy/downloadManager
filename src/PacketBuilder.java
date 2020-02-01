@@ -1,21 +1,21 @@
 class PacketBuilder {
 
-    private final int packetIndex;
-    private long packetPosition;
+    private final int index;
+    private long position;
     private byte[] bytesData;
     private boolean endPacket;
 
-    PacketBuilder(int packetIndex, long packetPosition, byte[] bytesData){
-        this.packetPosition = packetPosition;
+    PacketBuilder(int index, long position, byte[] bytesData){
+        this.position = position;
         this.bytesData = bytesData;
-        this.packetIndex = packetIndex;
+        this.index = index;
         this.endPacket = false;
     }
 
     PacketBuilder(boolean endPacket) {
-        this.packetPosition = 0;
+        this.position = 0;
         this.bytesData = null;
-        this.packetIndex = 0;
+        this.index = 0;
         this.endPacket = endPacket;
     }
 
@@ -23,12 +23,12 @@ class PacketBuilder {
         return endPacket;
     }
 
-    int getPacketIndex() {
-        return packetIndex;
+    int getIndex() {
+        return index;
     }
 
-    long getPacketPosition() {
-        return packetPosition;
+    long getPosition() {
+        return position;
     }
 
     byte[] getBytesData() {

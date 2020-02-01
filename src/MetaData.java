@@ -60,7 +60,7 @@ class MetaData implements Serializable {
         boolean isRenamed = false;
         while(!isRenamed){
             try {
-                Files.move(tempPath, destPath, StandardCopyOption.ATOMIC_MOVE); //Atomic_Move -> rename without raise condition
+                Files.move(tempPath, destPath, StandardCopyOption.ATOMIC_MOVE); //Atomic_Move -> copy without the risk of losing data
                 isRenamed = true;
             } catch (IOException e) {
                 e.printStackTrace();

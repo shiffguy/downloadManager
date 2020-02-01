@@ -132,17 +132,16 @@ public class DownloadManager implements Runnable {
      */
     private long getFileSize() {
 
+        HttpURLConnection httpConnection;
         long fileSize = -1;
-        for (URL url : this.urlsList) {
-            HttpURLConnection httpConnection;
-            try {
-                httpConnection = (HttpURLConnection) url.openConnection();
-                httpConnection.setRequestMethod("HEAD");
-                fileSize = httpConnection.getContentLengthLong();
-                break;
-            } catch (IOException ignored) {
-            }
+        URL url = urlsList.get(0);
+        try {
+            httpConnection = (HttpURLConnection) url.openConnection();
+            fileSize = httpConnection.getContentLengthLong();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+
         return fileSize;
     }
 

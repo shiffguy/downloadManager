@@ -27,7 +27,7 @@ class MetaData implements Serializable {
      * it will get it, otherwise create new metadata file
      * @param counterOfDownloadedPackets counter of chunks (file size / buffer size)
      * @param serPath name of the dest file for packets
-     * @return current MetaData object
+     * @return current metadata file object
      */
     static MetaData GetMetaData(int counterOfDownloadedPackets, String serPath){
 
@@ -37,10 +37,6 @@ class MetaData implements Serializable {
         return metaData;
     }
 
-    /***
-     * Updates currStatus array with 1 in the current packet index
-     * @param indexToUpdate index of the metadata object to update
-     */
     void UpdateIndex(int indexToUpdate){
         currStatus[indexToUpdate] = 1;
         writeToDisk();

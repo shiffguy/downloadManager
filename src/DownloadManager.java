@@ -18,10 +18,10 @@ public class DownloadManager implements Runnable {
     private static List<long[]> chunksStartAndEndPositions;
     private int urlIndex;
 
-    public DownloadManager(List<URL> urlList, int numOfThreads) {
+    public DownloadManager(List<URL> urlList, int maxNumOfConnections) {
         this.urlsList = urlList;
         this.packetsBlockingQueue = new LinkedBlockingQueue<>();
-        this.threadsPool = Executors.newFixedThreadPool(numOfThreads);
+        this.threadsPool = Executors.newFixedThreadPool(maxNumOfConnections);
         this.urlIndex = 0;
     }
 
@@ -67,10 +67,10 @@ public class DownloadManager implements Runnable {
         int packetIndex = 0;
         Iterator<long[]> positions = chunksStartAndEndPositions.iterator();
         while (positions.hasNext()){
-            long[] packetPositions = positions.next();
+            long[] chunksPositions = positions.next();
             boolean isPacketDownloaded = metaData.IsIndexDownloaded(packetIndex);
             if (!isPacketDownloaded) {
-                createTask(packetIndex, packetPositions);
+                newThreadJob(packetIndex, chunksPositions);
             }
             packetIndex++;
 
@@ -80,12 +80,12 @@ public class DownloadManager implements Runnable {
     /**
      * Creates new task fir any of the threads, to download specific chunks of data
      * @param packetIndex the index of the packet
-     * @param packetPositions array of tuples which for every tuple 0 - start , 1 - end
+     * @param chunksPositions array of tuples which for every tuple 0 - start , 1 - end
      */
-    private void createTask(int packetIndex, long[] packetPositions) {
+    private void newThreadJob(int packetIndex, long[] chunksPositions) {
         URL url = this.urlsList.get(urlIndex);
-        long chunkStartPos = packetPositions[0];
-        long chunkEndPos = packetPositions[1];
+        long chunkStartPos = chunksPositions[0];
+        long chunkEndPos = chunksPositions[1];
         ChunkOfDataDownloader ChunkOfDataDownloader = new ChunkOfDataDownloader(this.packetsBlockingQueue, url,
                 chunkStartPos, chunkEndPos, packetIndex, false);
 

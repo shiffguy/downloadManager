@@ -22,13 +22,6 @@ class MetaData implements Serializable {
     }
 
 
-    /***
-     * GetMetaData - if the metadata file has been created
-     * it will get it, otherwise create new metadata file
-     * @param counterOfDownloadedPackets counter of chunks (file size / buffer size)
-     * @param serPath name of the dest file for packets
-     * @return current metadata file object
-     */
     static MetaData GetMetaData(int counterOfDownloadedPackets, String serPath){
 
         File metaDataFile = new File(serPath).getAbsoluteFile();

@@ -145,13 +145,10 @@ public class DownloadManager implements Runnable {
         return fileSize;
     }
 
-    /**
-     * Calculate the right number of chunks of data that are needed in order to download the file
-     * @return int, the amount of ranges
-     */
     private int getNumOfChunks() {
         return (fileSize % (long) BUFFER_SIZE == 0) ? (int) (fileSize / BUFFER_SIZE) : (int) (fileSize / BUFFER_SIZE) + 1;
     }
+
 
     /**
      * Creates list which contains all the ranges of the right chunks of data
@@ -163,16 +160,11 @@ public class DownloadManager implements Runnable {
         return chunksRanges;
     }
 
-    /**
-     * Calculate the range (start byte and end byte) of the requested chunk
-     * @param chunkStartPos the start index of the chunk of packets
-     * @return array of tuples which for every tuple 0 - start , 1 - end
-     */
+
     private long[] getBytesOfChunkRange(long chunkStartPos) {
         long chunkStartByte = chunkStartPos * BUFFER_SIZE;
         long chunkEndByte = chunkStartByte + BUFFER_SIZE - 1;
-        boolean isValidRange = chunkEndByte < this.fileSize;
-        chunkEndByte = isValidRange ? chunkEndByte : this.fileSize;
+        chunkEndByte = Math.min(chunkEndByte, this.fileSize);
 
         return new long[]{chunkStartByte, chunkEndByte};
     }

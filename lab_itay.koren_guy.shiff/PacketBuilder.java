@@ -1,6 +1,3 @@
-/**
- * Creates packet including index and offset from which to start writing.
- * */
 class PacketBuilder {
 
     private final int index;

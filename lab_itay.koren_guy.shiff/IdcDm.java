@@ -1,6 +1,3 @@
-/**
- * Holds the main method. Gets the args from the user and checks their validity and starts the download process.
- * */
 import java.net.*;
 import java.util.*;
 

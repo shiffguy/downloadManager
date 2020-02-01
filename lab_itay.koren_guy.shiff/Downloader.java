@@ -1,6 +1,3 @@
-/**
- * Determines the data chunks and manages the working threads.
- * */
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;

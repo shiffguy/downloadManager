@@ -1,6 +1,3 @@
-/**
- * Checks whether the input is url address or list of urls and creates the according list.
- * */
 import java.io.*;
 import java.net.*;
 import java.util.*;

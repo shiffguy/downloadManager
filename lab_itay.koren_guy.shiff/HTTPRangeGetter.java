@@ -1,6 +1,3 @@
-/**
- * Connects to the urls and queuing the chunks to the BlockingQueue.
- * */
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 import java.net.*;

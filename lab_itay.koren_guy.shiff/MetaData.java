@@ -1,6 +1,3 @@
-/**
- * MetaData constructor.
- * */
 import java.io.*;
 import java.util.stream.*;
 import java.nio.file.*;

@@ -1,6 +1,3 @@
-/**
- * Manages the user interface prints.
- * */
 public class DmUI {
 
     private final static String Usage = "usage:\n\tjava IdcDm URL|URL-LIST-FILE [MAX-CONCURRENT-CONNECTIONS]";

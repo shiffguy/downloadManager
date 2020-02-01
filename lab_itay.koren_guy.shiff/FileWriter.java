@@ -1,6 +1,3 @@
-/**
- * Takes the chunks from the BlockingQueue and writes to the file.
- * */
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 

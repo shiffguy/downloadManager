@@ -45,7 +45,7 @@ public class DownloadManager implements Runnable {
 
         Thread writerThread;
         try {
-            writerThread = this.initPacketWriteThread(destFilePath);
+            writerThread = this.StartWriterThread(destFilePath);
         } catch (IOException e) {
             return;
         }
@@ -106,24 +106,23 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Initiate the PacketWriter
-     * @return thread which holds the PacketWriter
+     * Initiate the Writer
+     * @return thread which holds the Writer
      */
-    private Thread initPacketWriteThread(String destFileName) throws IOException {
-        PacketWriter packetWrite;
+    private Thread StartWriterThread(String destFileName) throws IOException {
+        Writer writer = null;
 
         try {
-            packetWrite = new PacketWriter(packetsBlockingQueue, metaData, destFileName);
+            writer = new Writer(packetsBlockingQueue, metaData, destFileName);
         }
         catch (IOException e){
-            System.err.println(e.getMessage());
-            throw e;
+            e.printStackTrace();
         }
 
-        Thread packetWriteThread = new Thread(packetWrite);
+        Thread writerThread = new Thread(writer);
 
-        packetWriteThread.start();
-        return packetWriteThread;
+        writerThread.start();
+        return writerThread;
     }
 
 
@@ -156,7 +155,7 @@ public class DownloadManager implements Runnable {
     }
 
     /**
-     * Craetes list which contains all the ranges of the right chunks of data
+     * Creates list which contains all the ranges of the right chunks of data
      * @return the list of the ranges
      */
     private List<long[]> getChunksRanges() {

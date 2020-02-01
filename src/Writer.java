@@ -3,7 +3,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.concurrent.LinkedBlockingQueue;
 
-public class PacketWriter implements Runnable {
+public class Writer implements Runnable {
 
     private String downloadedFilePath;
     private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
@@ -11,7 +11,7 @@ public class PacketWriter implements Runnable {
     private int statusOfProgressDownload;
     private boolean openingPrint;
 
-    PacketWriter(LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue, MetaData metaData, String downloadedFileName) throws IOException {
+    Writer(LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue, MetaData metaData, String downloadedFileName) throws IOException {
         this.packetsBlockingQueue = packetsBlockingQueue;
         this.metaData = metaData;
         this.downloadedFilePath = downloadedFileName;

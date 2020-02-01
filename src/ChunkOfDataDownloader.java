@@ -1,25 +1,22 @@
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.ProtocolException;
-import java.net.URL;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.io.*;
+import java.net.*;
 
 public class ChunkOfDataDownloader implements Runnable {
     private static final int CONNECT_TIME_OUT = 30 * 1000; //connect timeout for the http timeout
     private static final int READ_TIME_OUT = 30 * 1000; //read timeout for the http read timeout
-    private final int packetIndex;
-    private final boolean killStatus;
-    private LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue;
     private URL httpRequestedUrl;
+    private LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue;
     private long chunkStartPos;
     private long chunkEndPos;
+    private final int packetIndex;
+    private final boolean killStatus;
 
 
     ChunkOfDataDownloader(LinkedBlockingQueue <PacketBuilder> packetsBlockingQueue, URL httpRequestedUrl,
                      long chunkStartPos, long chunkEndPos, int packetIndex, boolean killStatus) {
-        this.packetsBlockingQueue = packetsBlockingQueue;
         this.httpRequestedUrl = httpRequestedUrl;
+        this.packetsBlockingQueue = packetsBlockingQueue;
         this.chunkStartPos = chunkStartPos;
         this.chunkEndPos = chunkEndPos;
         this.packetIndex = packetIndex;
@@ -34,17 +31,17 @@ public class ChunkOfDataDownloader implements Runnable {
             InputStream inputStream = null;
             try {
                 String range = String.format("Bytes=%d-%d", chunkStartPos, chunkEndPos);
-                HttpURLConnection httpConnection = (HttpURLConnection) httpRequestedUrl.openConnection();
+                HttpURLConnection connection = (HttpURLConnection) httpRequestedUrl.openConnection();
                 try {
-                    httpConnection.setRequestMethod("GET");
-                    httpConnection.setConnectTimeout(CONNECT_TIME_OUT);
-                    httpConnection.setReadTimeout(READ_TIME_OUT);
+                    connection.setRequestMethod("GET");
+                    connection.setConnectTimeout(CONNECT_TIME_OUT);
+                    connection.setReadTimeout(READ_TIME_OUT);
                 } catch (ProtocolException e) {
                     DmUI.printFailedHTTPRequest(this.httpRequestedUrl.toString());
                 }
-                httpConnection.setRequestProperty("Range", range);
-                int responseCode = httpConnection.getResponseCode();
-                inputStream = responseCode == HttpURLConnection.HTTP_PARTIAL ? httpConnection.getInputStream() : null;
+                connection.setRequestProperty("Range", range);
+                int response = connection.getResponseCode();
+                inputStream = response == HttpURLConnection.HTTP_PARTIAL ? connection.getInputStream() : null;
 
             } catch (IOException e) {
                 DmUI.printFailedHTTPRequest(this.httpRequestedUrl.toString());
@@ -53,15 +50,17 @@ public class ChunkOfDataDownloader implements Runnable {
             if (inputStream != null) {
                 try {
                     DmUI.printStartDownloadMessage(Thread.currentThread().getId(), chunkStartPos, chunkEndPos);
-                    byte[] buffer = inputStream.readAllBytes();
-                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, chunkStartPos, buffer);
+                    byte[] chunksBuffer = inputStream.readAllBytes();
+                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, chunkStartPos, chunksBuffer);
                     this.packetsBlockingQueue.add(packetBuilder);
                     DmUI.printFinishedToDownload(Thread.currentThread().getId());
+                    inputStream.close();
                 } catch (IOException e) {
                     DmUI.printFailedToDownloadPacket(this.chunkStartPos, this.httpRequestedUrl.toString());
                 }
             }
         } else {
+
             this.packetsBlockingQueue.add(new PacketBuilder(true));
         }
     }

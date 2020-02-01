@@ -56,9 +56,15 @@ public class Writer implements Runnable {
 
             writeDataOfPacket(DataBytesOfPacketToWrite, updatedPosition);
             metaData.UpdateIndex(packetIndex);
-            DmUI.printDownloadStatus(metaData, statusOfProgressDownload, openingPrint);
-            this.openingPrint = false;
+            double downloadCounterStatus = metaData.GetCounterOfDownloadedPackets();
+            int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
+            if (status != this.statusOfProgressDownload || openingPrint) {
+                this.statusOfProgressDownload = status;
+                DmUI.printDownloadStatus(this.statusOfProgressDownload);
+                this.openingPrint = false;
+            }
         }
+
         return isDownloadCompleted;
     }
 

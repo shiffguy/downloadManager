@@ -83,12 +83,9 @@ public class DmUI {
         System.err.println("[" + n + "] Start downloading range (" + start + " - " + end +") from:");
     }
 
-    static void printDownloadStatus(MetaData metaData, int n, boolean b) {
-        double downloadCounterStatus = metaData.GetCounterOfDownloadedPackets();
-        int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
-        if (status != n || b) {
-            n = status;
+    static void printDownloadStatus(int n) {
+
             System.err.println("Downloaded " + n + "%");
         }
-    }
+
 }

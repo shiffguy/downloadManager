@@ -5,17 +5,17 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class Writer implements Runnable {
 
-    private String downloadedFilePath;
-    private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
-    private MetaData metaData;
     private int statusOfProgressDownload;
+    private MetaData metaData;
+    private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
+    private String destFile;
     private boolean openingPrint;
 
-    Writer(LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue, MetaData metaData, String downloadedFileName) throws IOException {
-        this.packetsBlockingQueue = packetsBlockingQueue;
+    Writer(LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue, MetaData metaData, String destFile) throws IOException {
         this.metaData = metaData;
-        this.downloadedFilePath = downloadedFileName;
+        this.packetsBlockingQueue = packetsBlockingQueue;
         this.statusOfProgressDownload = this.metaData.GetCounterOfDownloadedPackets() / this.metaData.GetNumberOfPackets();
+        this.destFile = destFile;
         this.openingPrint = true;
         createDestFile();
     }
@@ -58,7 +58,7 @@ public class Writer implements Runnable {
             metaData.UpdateIndex(packetIndex);
             double downloadCounterStatus = metaData.GetCounterOfDownloadedPackets();
             int status = (int) ((downloadCounterStatus / metaData.GetNumberOfPackets()) * 100);
-            if (status != this.statusOfProgressDownload || openingPrint) {
+            if (status > this.statusOfProgressDownload || openingPrint) {
                 this.statusOfProgressDownload = status;
                 DmUI.printDownloadStatus(this.statusOfProgressDownload);
                 this.openingPrint = false;
@@ -69,29 +69,22 @@ public class Writer implements Runnable {
     }
 
 
-    /**
-     * Writes data using randomAccessFile object
-     *
-     * @param dataToWrite      byte array containing the data need to be written to the file
-     * @param updatedPosition long number represent the position where the data need to written from
-     */
-    private void writeDataOfPacket(byte[] dataToWrite, long updatedPosition) {
-        try (RandomAccessFile randomAccessFile = new RandomAccessFile(downloadedFilePath, "rw")) {
+
+    private void writeDataOfPacket(byte[] packetData, long updatedPosition) {
+        try (RandomAccessFile randomAccessFile = new RandomAccessFile(destFile, "rw")) {
 
             randomAccessFile.seek(updatedPosition);
-            randomAccessFile.write(dataToWrite);
+            randomAccessFile.write(packetData);
         } catch (IOException e) {
             DmUI.printFailedToWritePacket();
         }
     }
 
-    /**
-     * Create the destination file of the downloaded packets of data
-     */
+
     private void createDestFile() throws IOException {
-        File myFile = new File(this.downloadedFilePath);
+        File cur = new File(this.destFile);
         try {
-            myFile.createNewFile();
+            cur.createNewFile();
         } catch (IOException e) {
             DmUI.printFileNotCreated();
             throw e;

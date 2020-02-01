@@ -1,9 +1,6 @@
 import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.net.*;
+import java.util.*;
 
 public class IdcDm {
 
@@ -53,14 +50,14 @@ public class IdcDm {
         }
 
         if (urlsList.size() > 0) {
-            DownloadManager downloadManager = new DownloadManager(urlsList, maxNumOfConnections);
+            Downloader downloader = new Downloader(urlsList, maxNumOfConnections);
 
             if (argsLen == 1) {
                 DmUI.printDownloading();
             } else {
                 DmUI.printDownloadingN(maxNumOfConnections);
             }
-            downloadManager.run();
+            downloader.run();
         }
     }
 }

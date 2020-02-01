@@ -18,9 +18,6 @@ public class FileWriter implements Runnable {
         createDestFile();
     }
 
-    /**
-     * Write all the data to the dest file.
-     */
     @Override
     public void run() {
         boolean isDownloadCompleted = false;
@@ -40,6 +37,14 @@ public class FileWriter implements Runnable {
         }
     }
 
+    private void createDestFile() throws IOException {
+        File cur = new File(this.destFile);
+        try {
+            cur.createNewFile();
+        } catch (IOException e) {
+            DmUI.printFileNotCreated();
+        }
+    }
 
     private boolean processSinglePacketData(PacketBuilder dataOfPacket){
         boolean isDownloadCompleted = this.isEndPacket(dataOfPacket);
@@ -62,8 +67,6 @@ public class FileWriter implements Runnable {
         return isDownloadCompleted;
     }
 
-
-
     private void writeDataOfPacket(byte[] packetData, long updatedPosition) {
         try (RandomAccessFile randomAccessFile = new RandomAccessFile(destFile, "rw")) {
 
@@ -71,17 +74,6 @@ public class FileWriter implements Runnable {
             randomAccessFile.write(packetData);
         } catch (IOException e) {
             DmUI.printFailedToWritePacket();
-        }
-    }
-
-
-    private void createDestFile() throws IOException {
-        File cur = new File(this.destFile);
-        try {
-            cur.createNewFile();
-        } catch (IOException e) {
-            DmUI.printFileNotCreated();
-            throw e;
         }
     }
 

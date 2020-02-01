@@ -4,7 +4,7 @@ import java.util.concurrent.*;
 import java.util.stream.*;
 import java.net.*;
 
-public class DownloadManager implements Runnable {
+public class Downloader implements Runnable {
 
     private List<URL> urlsList;
     private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
@@ -15,7 +15,7 @@ public class DownloadManager implements Runnable {
     private MetaData metaData;
     private static final int dataChunkSize = 500000;  // Each chunk of data size
 
-    DownloadManager(List<URL> urlList, int maxNumOfConnections) {
+    Downloader(List<URL> urlList, int maxNumOfConnections) {
         this.urlsList = urlList;
         this.packetsBlockingQueue = new LinkedBlockingQueue<>();
         this.threadsPool = Executors.newFixedThreadPool(maxNumOfConnections);
@@ -68,6 +68,27 @@ public class DownloadManager implements Runnable {
 
         return fileSize;
     }
+    private List<long[]> getChunksRanges() {
+        List<long[]> chunksRanges = new ArrayList<>();
+        IntStream.range(0, getNumOfChunks()).forEach(i ->  chunksRanges.add(getBytesOfChunkRange(i)));
+        return chunksRanges;
+    }
+
+
+    private long[] getBytesOfChunkRange(long chunkStartPos) {
+        long chunkStartByte = chunkStartPos * dataChunkSize;
+        long chunkEndByte = Math.min(chunkStartByte + dataChunkSize - 1, this.fileSize);
+
+        return new long[]{chunkStartByte, chunkEndByte};
+    }
+
+    private int getNumOfChunks() {
+        return (fileSize % (long) dataChunkSize == 0) ? (int) (fileSize / dataChunkSize) : (int) (fileSize / dataChunkSize) + 1;
+    }
+
+    private void setEndPacket() {
+        packetsBlockingQueue.add( new PacketBuilder(true));
+    }
 
     private void newThreadJob(int packetIndex, long[] chunksPositions) {
         URL url = this.urlsList.get(urlIndex);
@@ -113,28 +134,7 @@ public class DownloadManager implements Runnable {
 
         }
     }
-
-    private List<long[]> getChunksRanges() {
-        List<long[]> chunksRanges = new ArrayList<>();
-        IntStream.range(0, getNumOfChunks()).forEach(i ->  chunksRanges.add(getBytesOfChunkRange(i)));
-        return chunksRanges;
-    }
-
-
-    private long[] getBytesOfChunkRange(long chunkStartPos) {
-        long chunkStartByte = chunkStartPos * dataChunkSize;
-        long chunkEndByte = Math.min(chunkStartByte + dataChunkSize - 1, this.fileSize);
-
-        return new long[]{chunkStartByte, chunkEndByte};
-    }
-
-    private int getNumOfChunks() {
-        return (fileSize % (long) dataChunkSize == 0) ? (int) (fileSize / dataChunkSize) : (int) (fileSize / dataChunkSize) + 1;
-    }
-
-    private void setEndPacket() {
-        packetsBlockingQueue.add( new PacketBuilder(true));
-    }
 }
+
 
 

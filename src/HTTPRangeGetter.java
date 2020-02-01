@@ -47,8 +47,8 @@ public class HTTPRangeGetter implements Runnable {
             if (inputStream != null) {
                 try {
                     DmUI.printBeginningDownload(Thread.currentThread().getId(), chunkStartPos, chunkEndPos);
-                    byte[] chunksBuffer = inputStream.readAllBytes();
-                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, chunkStartPos, chunksBuffer);
+                    byte[] dataChunkSize = inputStream.readAllBytes();
+                    PacketBuilder packetBuilder = new PacketBuilder(packetIndex, chunkStartPos, dataChunkSize);
                     this.blockingQueue.add(packetBuilder);
                     DmUI.printFinishedToDownload(Thread.currentThread().getId());
                     inputStream.close();

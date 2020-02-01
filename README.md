@@ -1,7 +1,7 @@
 # downloadManager
 Names:
-Itay Koren - 205782113
-Guy Shiff - 308577469
+Itay Koren
+Guy Shiff
 
 Purpose(can be seen at the beginning of every class):
 

@@ -22,9 +22,6 @@ public class DownloadManager implements Runnable {
         this.urlIndex = 0;
     }
 
-    /**
-     * Initiate a download process of the file from the given urls using threads and dividing the data into chunks
-     */
     public void run() {
         this.fileSize = this.getFileSize();
         boolean isSuccessfulConnection = fileSize != -1;

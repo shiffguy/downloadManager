@@ -6,12 +6,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class IdcDm {
-    /***
-     * Get the needed url addresses of the servers from the CMD or from a file
-     * @param firstUrlArg url address or file contains url addresses
-     * @return List<URL> contains all servers which will be managed by the DM
-     */
-    public static List<URL> readCommandLineFirstUrlArg(String firstUrlArg) {
+
+    private static List<URL> readCommandLineFirstUrlArg(String firstUrlArg) {
         List<URL> urlsList = new ArrayList<>();
 
         try {

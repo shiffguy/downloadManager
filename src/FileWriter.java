@@ -1,7 +1,7 @@
 import java.util.concurrent.LinkedBlockingQueue;
 import java.io.*;
 
-public class Writer implements Runnable {
+public class FileWriter implements Runnable {
 
     private int statusOfProgressDownload;
     private MetaData metaData;
@@ -9,7 +9,7 @@ public class Writer implements Runnable {
     private String destFile;
     private boolean openingPrint;
 
-    Writer(LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue, MetaData metaData, String destFile) throws IOException {
+    FileWriter(LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue, MetaData metaData, String destFile) throws IOException {
         this.metaData = metaData;
         this.packetsBlockingQueue = packetsBlockingQueue;
         this.statusOfProgressDownload = this.metaData.GetCounterOfDownloadedPackets() / this.metaData.GetNumberOfPackets();
@@ -40,13 +40,9 @@ public class Writer implements Runnable {
         }
     }
 
-    /**
-     * Checks the packet, until it is not the kill packet will write it to the file
-     * @param dataOfPacket curr packet of data
-     * @return true if we got kill packet and thus download is completed
-     */
+
     private boolean processSinglePacketData(PacketBuilder dataOfPacket){
-        boolean isDownloadCompleted = this.checkIfKill(dataOfPacket);
+        boolean isDownloadCompleted = this.isEndPacket(dataOfPacket);
         if (!isDownloadCompleted) {
             long updatedPosition = dataOfPacket.getPacketPosition();
             int packetIndex = dataOfPacket.getPacketIndex();
@@ -89,8 +85,8 @@ public class Writer implements Runnable {
         }
     }
 
-    private boolean checkIfKill(PacketBuilder dataOfPacket) {
-        return dataOfPacket.getKillStatus();
+    private boolean isEndPacket(PacketBuilder dataOfPacket) {
+        return dataOfPacket.getEndPacketStatus();
     }
 
 }

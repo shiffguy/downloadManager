@@ -78,7 +78,7 @@ public class DmUI {
         System.err.println("[" + n + "] Finished downloading");
     }
 
-    static void printStartDownloadMessage(long n,long start, long end) {
+    static void printBeginningDownload(long n, long start, long end) {
 
         System.err.println("[" + n + "] Start downloading range (" + start + " - " + end +") from:");
     }

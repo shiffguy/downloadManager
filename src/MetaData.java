@@ -1,9 +1,6 @@
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.stream.IntStream;
+import java.util.stream.*;
+import java.nio.file.*;
 
 class MetaData implements Serializable {
     private String tempSerPath;
@@ -35,20 +32,7 @@ class MetaData implements Serializable {
         writeToDisk();
     }
 
-    boolean IsIndexDownloaded(int indexToCheck){
-        return (currStatus[indexToCheck] == 1); }
 
-    boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks; }
-
-    int GetCounterOfDownloadedPackets(){
-        return this.counterOfDownloadedPackets;
-    }
-
-    int GetNumberOfPackets() {return this.numOfChunks;}
-
-    /***
-     * Read from the metadata file
-     */
     private static MetaData ReadFromDisk(String serPath){
         MetaData metaData = null;
         try(FileInputStream fileInputStream = new FileInputStream(serPath);
@@ -61,9 +45,6 @@ class MetaData implements Serializable {
         return metaData;
     }
 
-    /***
-     * Write to the metadata file
-     */
     private void writeToDisk(){
         try(FileOutputStream fileOutputStream = new FileOutputStream(tempSerPath);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream)){
@@ -79,15 +60,13 @@ class MetaData implements Serializable {
         boolean isRenamed = false;
         while(!isRenamed){
             try {
-                //Atomic_Move in order to be sure in the renaming
-                Files.move(tempPath, destPath, StandardCopyOption.ATOMIC_MOVE);
+                Files.move(tempPath, destPath, StandardCopyOption.ATOMIC_MOVE); //Atomic_Move -> rename without raise condition
                 isRenamed = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
-
 
     void deleteMetaData() {
         File metadataFile = new File(this.serPath);
@@ -96,4 +75,15 @@ class MetaData implements Serializable {
             DmUI.printFailedToDeleteMetaData(this.serPath);
         }
     }
+    boolean IsIndexDownloaded(int indexToCheck){
+        return (currStatus[indexToCheck] == 1); }
+
+    boolean IsDownloadCompleted() { return IntStream.of(currStatus).sum() == this.numOfChunks; }
+
+    int GetCounterOfDownloadedPackets(){
+        return this.counterOfDownloadedPackets;
+    }
+
+    int GetNumberOfPackets() {return this.numOfChunks;}
+
 }

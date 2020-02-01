@@ -1,24 +1,21 @@
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.net.URL;
+import java.util.*;
 import java.util.concurrent.*;
-import java.util.stream.IntStream;
+import java.util.stream.*;
+import java.net.*;
 
 public class DownloadManager implements Runnable {
 
-    private static final int BUFFER_SIZE = 500000;  // Each chunk of data size
     private List<URL> urlsList;
     private LinkedBlockingQueue<PacketBuilder> packetsBlockingQueue;
-    private ExecutorService threadsPool;
-    private MetaData metaData;
-    private long fileSize;
     private static List<long[]> chunksStartAndEndPositions;
+    private ExecutorService threadsPool;
+    private long fileSize;
     private int urlIndex;
+    private MetaData metaData;
+    private static final int dataChunkSize = 500000;  // Each chunk of data size
 
-    public DownloadManager(List<URL> urlList, int maxNumOfConnections) {
+    DownloadManager(List<URL> urlList, int maxNumOfConnections) {
         this.urlsList = urlList;
         this.packetsBlockingQueue = new LinkedBlockingQueue<>();
         this.threadsPool = Executors.newFixedThreadPool(maxNumOfConnections);
@@ -49,87 +46,17 @@ public class DownloadManager implements Runnable {
         } catch (IOException e) {
             return;
         }
-        IteratesPackets();
+        IteratesChunks();
         this.threadsPool.shutdown();
         try {
             threadsPool.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-            addKillPacket();
+            setEndPacket();
             writerThread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Iterates and sets tasks for the threads in thread pool. Stops where gets a kill packet
-     */
-    private void IteratesPackets() {
-        int packetIndex = 0;
-        Iterator<long[]> positions = chunksStartAndEndPositions.iterator();
-        while (positions.hasNext()){
-            long[] chunksPositions = positions.next();
-            boolean isPacketDownloaded = metaData.IsIndexDownloaded(packetIndex);
-            if (!isPacketDownloaded) {
-                newThreadJob(packetIndex, chunksPositions);
-            }
-            packetIndex++;
-
-        }
-    }
-
-    /**
-     * Creates new task fir any of the threads, to download specific chunks of data
-     * @param packetIndex the index of the packet
-     * @param chunksPositions array of tuples which for every tuple 0 - start , 1 - end
-     */
-    private void newThreadJob(int packetIndex, long[] chunksPositions) {
-        URL url = this.urlsList.get(urlIndex);
-        long chunkStartPos = chunksPositions[0];
-        long chunkEndPos = chunksPositions[1];
-        ChunkOfDataDownloader ChunkOfDataDownloader = new ChunkOfDataDownloader(this.packetsBlockingQueue, url,
-                chunkStartPos, chunkEndPos, packetIndex, false);
-
-        this.threadsPool.execute(ChunkOfDataDownloader);
-        if(this.urlsList.size()-1 == this.urlIndex){
-            this.urlIndex = 0;
-        } else {
-            this.urlIndex++;
-        }
-    }
-
-    /**
-     * Creates a kill packet and adds it to the queue
-     */
-    private void addKillPacket() {
-
-        packetsBlockingQueue.add( new PacketBuilder(true));
-    }
-
-    /**
-     * Initiate the Writer
-     * @return thread which holds the Writer
-     */
-    private Thread StartWriterThread(String destFileName) throws IOException {
-        Writer writer = null;
-
-        try {
-            writer = new Writer(packetsBlockingQueue, metaData, destFileName);
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-
-        Thread writerThread = new Thread(writer);
-
-        writerThread.start();
-        return writerThread;
-    }
-
-
-    /**
-     * Create a http get request to get the size in bytes of the requested download file.
-     * @return the size of the file in bytes
-     */
     private long getFileSize() {
 
         HttpURLConnection httpConnection;
@@ -145,15 +72,51 @@ public class DownloadManager implements Runnable {
         return fileSize;
     }
 
-    private int getNumOfChunks() {
-        return (fileSize % (long) BUFFER_SIZE == 0) ? (int) (fileSize / BUFFER_SIZE) : (int) (fileSize / BUFFER_SIZE) + 1;
+    private void newThreadJob(int packetIndex, long[] chunksPositions) {
+        URL url = this.urlsList.get(urlIndex);
+        long chunkStartPos = chunksPositions[0];
+        long chunkEndPos = chunksPositions[1];
+        HTTPRangeGetter HTTPRangeGetter = new HTTPRangeGetter(this.packetsBlockingQueue, url,
+                chunkStartPos, chunkEndPos, packetIndex, false);
+
+        this.threadsPool.execute(HTTPRangeGetter);
+        if(this.urlsList.size()-1 == this.urlIndex){
+            this.urlIndex = 0;
+        } else {
+            this.urlIndex++;
+        }
     }
 
+    private Thread StartWriterThread(String destFileName) throws IOException {
+        FileWriter fileWriter = null;
 
-    /**
-     * Creates list which contains all the ranges of the right chunks of data
-     * @return the list of the ranges
-     */
+        try {
+            fileWriter = new FileWriter(packetsBlockingQueue, metaData, destFileName);
+        }
+        catch (IOException e){
+            e.printStackTrace();
+        }
+
+        Thread writerThread = new Thread(fileWriter);
+
+        writerThread.start();
+        return writerThread;
+    }
+
+    private void IteratesChunks() {
+        int packetIndex = 0;
+        Iterator<long[]> positions = chunksStartAndEndPositions.iterator();
+        while (positions.hasNext()){
+            long[] chunksPositions = positions.next();
+            boolean isPacketDownloaded = metaData.IsIndexDownloaded(packetIndex);
+            if (!isPacketDownloaded) {
+                newThreadJob(packetIndex, chunksPositions);
+            }
+            packetIndex++;
+
+        }
+    }
+
     private List<long[]> getChunksRanges() {
         List<long[]> chunksRanges = new ArrayList<>();
         IntStream.range(0, getNumOfChunks()).forEach(i ->  chunksRanges.add(getBytesOfChunkRange(i)));
@@ -162,11 +125,18 @@ public class DownloadManager implements Runnable {
 
 
     private long[] getBytesOfChunkRange(long chunkStartPos) {
-        long chunkStartByte = chunkStartPos * BUFFER_SIZE;
-        long chunkEndByte = chunkStartByte + BUFFER_SIZE - 1;
-        chunkEndByte = Math.min(chunkEndByte, this.fileSize);
+        long chunkStartByte = chunkStartPos * dataChunkSize;
+        long chunkEndByte = Math.min(chunkStartByte + dataChunkSize - 1, this.fileSize);
 
         return new long[]{chunkStartByte, chunkEndByte};
+    }
+
+    private int getNumOfChunks() {
+        return (fileSize % (long) dataChunkSize == 0) ? (int) (fileSize / dataChunkSize) : (int) (fileSize / dataChunkSize) + 1;
+    }
+
+    private void setEndPacket() {
+        packetsBlockingQueue.add( new PacketBuilder(true));
     }
 }
 
